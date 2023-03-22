@@ -1,4 +1,5 @@
 export class BaseAuthDto {
   username: string;
-  expiredAt: string;
+  accessToken: string;
+  expiredAt: number;
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
+import get from 'lodash/get';
 import { Model } from 'mongoose';
 import { UserService } from '../user/user.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -25,10 +26,38 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
-    const payload = { username: user.username };
+  async login(data: any) {
+    const { username, role, fullName } = data._doc;
+    const payload = { username, role, fullName };
+    const expiredAt = dayjs().add(30, 'day').valueOf();
+    const accessToken = await this.jwtService.sign(payload);
+
+    const isExistInAuth = await this.model.findOne({ username });
+    if (!isExistInAuth) {
+      await this.model.create({
+        username,
+        expiredAt,
+        accessToken,
+        createdAt: dayjs().valueOf(),
+      });
+    } else {
+      await this.model.findOneAndUpdate(
+        { username },
+        { username, expiredAt, accessToken, updatedAt: dayjs().valueOf() },
+      );
+    }
+
+    this.model.create({ username, expiredAt });
+    return { accessToken, expiredAt };
+  }
+
+  async logout(authorization: string) {
+    const accessToken = authorization.replace('Bearer ', '');
+    const currentUserDecode = await this.jwtService.decode(accessToken);
+    const username = get(currentUserDecode, 'username');
+    await this.model.findOneAndDelete({ username });
     return {
-      accessToken: this.jwtService.sign(payload),
+      message: 'Successful logout!',
     };
   }
 

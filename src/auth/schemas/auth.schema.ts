@@ -9,7 +9,10 @@ export class Auth {
   username: string;
 
   @Prop({ required: true })
-  expiredAt: string;
+  accessToken: string;
+
+  @Prop({ required: true })
+  expiredAt: number;
 
   @Prop({ required: true })
   createdAt: number;
