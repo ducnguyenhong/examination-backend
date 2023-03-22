@@ -1,32 +1,46 @@
 import { Injectable } from '@nestjs/common';
-
-export type User = any;
+import { InjectModel } from '@nestjs/mongoose';
+import dayjs from 'dayjs';
+import { Model } from 'mongoose';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User, UserDocument } from './schemas/user.schema';
 
 @Injectable()
 export class UserService {
-  private readonly users: User[];
+  constructor(
+    @InjectModel(User.name) private readonly model: Model<UserDocument>,
+  ) {}
 
-  constructor() {
-    this.users = [
-      {
-        userId: 1,
-        username: 'john',
-        password: 'changeme',
-      },
-      {
-        userId: 2,
-        username: 'chris',
-        password: 'secret',
-      },
-      {
-        userId: 3,
-        username: 'maria',
-        password: 'guess',
-      },
-    ];
+  async findAll(): Promise<User[]> {
+    return await this.model.find().exec();
   }
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
+  async findOne(id: string): Promise<User> {
+    return await this.model.findById(id);
+  }
+
+  async findOneWithUsername(username: string): Promise<User> {
+    return await this.model.findOne({ username }).exec();
+  }
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    return await new this.model({
+      ...createUserDto,
+      createdAt: dayjs().valueOf(),
+    }).save();
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    return await this.model
+      .findByIdAndUpdate(id, {
+        ...updateUserDto,
+        updatedAt: dayjs().valueOf(),
+      })
+      .exec();
+  }
+
+  async delete(id: string): Promise<User> {
+    return await this.model.findByIdAndDelete(id).exec();
   }
 }

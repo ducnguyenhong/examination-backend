@@ -8,7 +8,9 @@ import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://127.0.0.1:27017/examination'),
+    MongooseModule.forRoot(
+      'mongodb+srv://admin:abcd1234@examination.fgjmhxz.mongodb.net/examination?retryWrites=true&w=majority',
+    ),
     TodoModule,
     AuthModule,
     UserModule,

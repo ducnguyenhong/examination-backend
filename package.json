@@ -26,6 +26,7 @@
     "@nestjs/mongoose": "^9.2.2",
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.0.0",
+    "dayjs": "^1.11.7",
     "mongoose": "^7.0.2",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
