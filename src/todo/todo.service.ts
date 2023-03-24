@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import dayjs from 'dayjs';
 import { Model } from 'mongoose';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -22,7 +23,7 @@ export class TodoService {
   async create(createTodoDto: CreateTodoDto): Promise<Todo> {
     return await new this.model({
       ...createTodoDto,
-      createdAt: new Date(),
+      createdAt: dayjs().valueOf(),
     }).save();
   }
 
@@ -30,7 +31,7 @@ export class TodoService {
     return await this.model
       .findByIdAndUpdate(id, {
         ...updateTodoDto,
-        updatedAt: new Date(),
+        updatedAt: dayjs().valueOf(),
       })
       .exec();
   }

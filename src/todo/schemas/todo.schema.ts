@@ -12,13 +12,13 @@ export class Todo {
   description?: string;
 
   @Prop()
-  updatedAt?: Date;
+  updatedAt?: number;
 
   @Prop({ required: true })
-  createdAt: Date;
+  createdAt: number;
 
   @Prop()
-  deletedAt?: Date;
+  deletedAt?: number;
 }
 
 const TodoSchema = SchemaFactory.createForClass(Todo);

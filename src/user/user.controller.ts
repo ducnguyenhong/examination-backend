@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Post,
   Put,
@@ -26,8 +27,8 @@ export class UserController {
   }
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return await this.service.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto, @Headers() headers) {
+    return await this.service.create(createUserDto, headers.authorization);
   }
 
   @Put(':id')

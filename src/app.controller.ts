@@ -21,8 +21,14 @@ export class AppController {
   ) {}
 
   @Post('auth/register')
-  async register(@Request() req) {
-    return this.userService.create(req.body);
+  async register(@Request() req, @Headers() headers) {
+    return this.userService.create(req.body, headers.authorization);
+  }
+
+  @UseInterceptors(FormatResponseInterceptor)
+  @Post('auth/check-exists')
+  async checkExistsUsername(@Request() req) {
+    return this.userService.checkExistsUsername(req.body?.username);
   }
 
   @UseGuards(LocalAuthGuard)

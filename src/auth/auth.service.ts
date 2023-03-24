@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import CryptoJS from 'crypto-js';
 import dayjs from 'dayjs';
 import get from 'lodash/get';
 import { Model } from 'mongoose';
+import { AES_SECRET_KEY_PASSWORD } from 'src/constant';
+import { USERNAME_OR_PASSWORD_INCORRECT } from 'src/constant/response-code';
 import { UserService } from '../user/user.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -19,7 +22,24 @@ export class AuthService {
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.userService.findOneWithUsername(username);
-    if (user && user.password === pass) {
+
+    if (user) {
+      const bytes = CryptoJS.AES.decrypt(
+        user.password,
+        AES_SECRET_KEY_PASSWORD,
+      );
+      const decryptPassword = bytes.toString(CryptoJS.enc.Utf8);
+
+      if (decryptPassword !== pass) {
+        throw new HttpException(
+          {
+            message: 'Username or password incorrect',
+            code: USERNAME_OR_PASSWORD_INCORRECT,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const { password, ...result } = user;
       return result;
     }
@@ -56,9 +76,7 @@ export class AuthService {
     const currentUserDecode = await this.jwtService.decode(accessToken);
     const username = get(currentUserDecode, 'username');
     await this.model.findOneAndDelete({ username });
-    return {
-      message: 'Successful logout!',
-    };
+    return null;
   }
 
   async findOne(id: string): Promise<Auth> {
