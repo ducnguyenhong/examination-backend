@@ -67,7 +67,6 @@ export class AuthService {
       );
     }
 
-    this.model.create({ username, expiredAt });
     return { accessToken, expiredAt };
   }
 

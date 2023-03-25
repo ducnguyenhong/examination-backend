@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import CryptoJS from 'crypto-js';
@@ -39,6 +44,9 @@ export class UserService {
     const currentUserDecode = await this.jwtService.decode(accessToken);
     const username = get(currentUserDecode, 'username');
     const currentUser = await this.model.findOne({ username });
+    if (!currentUser) {
+      throw new UnauthorizedException();
+    }
     const { password, _id, ...rest } = currentUser.toObject();
     return { id: _id, ...rest };
   }
@@ -47,10 +55,30 @@ export class UserService {
     createUserDto: CreateUserDto,
     authorization: string,
   ): Promise<User> {
-    const accessToken = authorization.replace('Bearer ', '');
-    const authUserDecode = await this.jwtService.decode(accessToken);
-    const authRole = get(authUserDecode, 'role');
     const { role, password, username } = createUserDto;
+    if (role !== 'STUDENT') {
+      if (!authorization || role === 'ADMIN') {
+        throw new HttpException(
+          {
+            message: 'No execute permission',
+            code: NO_EXECUTE_PERMISSION,
+          },
+          HttpStatus.FORBIDDEN,
+        );
+      }
+      const accessToken = authorization.replace('Bearer ', '');
+      const authUserDecode = await this.jwtService.decode(accessToken);
+      const authRole = get(authUserDecode, 'role');
+      if (role === 'TEACHER' && authRole !== 'ADMIN') {
+        throw new HttpException(
+          {
+            message: 'No execute permission',
+            code: NO_EXECUTE_PERMISSION,
+          },
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
     if (!password) {
       throw new HttpException(
         {
@@ -58,15 +86,6 @@ export class UserService {
           code: PASSWORD_IS_REQUIRED,
         },
         HttpStatus.BAD_REQUEST,
-      );
-    }
-    if (role === 'ADMIN' || (role === 'TEACHER' && authRole !== 'ADMIN')) {
-      throw new HttpException(
-        {
-          message: 'No execute permission',
-          code: NO_EXECUTE_PERMISSION,
-        },
-        HttpStatus.FORBIDDEN,
       );
     }
 
