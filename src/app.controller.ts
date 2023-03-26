@@ -13,6 +13,7 @@ import { LocalAuthGuard } from './auth/guards/local-auth.guard';
 import { FormatResponseInterceptor } from './common/interceptors/format-response.interceptor';
 import { UserService } from './user/user.service';
 
+@UseInterceptors(FormatResponseInterceptor)
 @Controller()
 export class AppController {
   constructor(
@@ -25,7 +26,6 @@ export class AppController {
     return this.userService.create(req.body, headers.authorization);
   }
 
-  @UseInterceptors(FormatResponseInterceptor)
   @Post('auth/check-exists')
   async checkExistsUsername(@Request() req) {
     return this.userService.checkExistsUsername(req.body?.username);
@@ -37,14 +37,12 @@ export class AppController {
     return this.authService.login(req.user);
   }
 
-  @UseInterceptors(FormatResponseInterceptor)
   @UseGuards(LocalAuthGuard)
   @Post('auth/logout')
   async logout(@Headers() headers) {
     return this.authService.logout(headers.authorization);
   }
 
-  @UseInterceptors(FormatResponseInterceptor)
   @UseGuards(JwtAuthGuard)
   @Get('user-info')
   getProfile(@Headers() headers) {

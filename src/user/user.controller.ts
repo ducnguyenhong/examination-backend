@@ -7,11 +7,14 @@ import {
   Param,
   Post,
   Put,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FormatResponseInterceptor } from 'src/common/interceptors/format-response.interceptor';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
+@UseInterceptors(FormatResponseInterceptor)
 @Controller('users')
 export class UserController {
   constructor(private readonly service: UserService) {}

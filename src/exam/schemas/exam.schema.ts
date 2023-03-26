@@ -1,15 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type TodoDocument = Todo & Document;
+export type ExamDocument = Exam & Document;
 
 @Schema()
-export class Todo {
+export class Exam {
   @Prop({ required: true })
   title: string;
 
+  @Prop({ required: true })
+  subjectId: string;
+
+  @Prop({ required: true })
+  teacherId: string;
+
+  @Prop({ required: true })
+  questionIds: string[];
+
   @Prop()
-  description?: string;
+  password?: string;
 
   @Prop({ required: true })
   status: 'ACTIVE' | 'INACTIVE';
@@ -24,13 +33,13 @@ export class Todo {
   deletedAt?: number;
 }
 
-const TodoSchema = SchemaFactory.createForClass(Todo);
+const ExamSchema = SchemaFactory.createForClass(Exam);
 
-TodoSchema.virtual('id').get(function () {
+ExamSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-TodoSchema.set('toJSON', {
+ExamSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: function (_, ret) {
@@ -38,4 +47,4 @@ TodoSchema.set('toJSON', {
   },
 });
 
-export { TodoSchema };
+export { ExamSchema };

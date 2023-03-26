@@ -3,7 +3,7 @@ export class BaseQuestionDto {
   answers: { label: string; value: string; isCorrect: boolean }[];
   level: number;
   subjectId: string;
-  teacherId: string;
+  // teacherId: string;
   security: boolean;
   status: 'ACTIVE' | 'INACTIVE';
   explanation: string;

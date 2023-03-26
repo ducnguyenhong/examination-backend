@@ -47,8 +47,8 @@ export class AuthService {
   }
 
   async login(data: any) {
-    const { username, role, fullName } = data._doc;
-    const payload = { username, role, fullName };
+    const { username, role, fullName, _id } = data._doc;
+    const payload = { username, role, fullName, id: _id };
     const expiredAt = dayjs().add(30, 'day').valueOf();
     const accessToken = await this.jwtService.sign(payload);
 

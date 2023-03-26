@@ -5,29 +5,29 @@ import dayjs from 'dayjs';
 import get from 'lodash/get';
 import { Model } from 'mongoose';
 import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
-import { CreateQuestionDto } from './dto/create-question.dto';
-import { UpdateQuestionDto } from './dto/update-question.dto';
-import { Question, QuestionDocument } from './schemas/question.schema';
+import { CreateExamDto } from './dto/create-exam.dto';
+import { UpdateExamDto } from './dto/update-exam.dto';
+import { Exam, ExamDocument } from './schemas/exam.schema';
 
 @Injectable()
-export class QuestionService {
+export class ExamService {
   constructor(
-    @InjectModel(Question.name) private readonly model: Model<QuestionDocument>,
+    @InjectModel(Exam.name) private readonly model: Model<ExamDocument>,
     private readonly jwtService: JwtService,
   ) {}
 
-  async findAll(): Promise<Question[]> {
+  async findAll(): Promise<Exam[]> {
     return await this.model.find().exec();
   }
 
-  async findOne(id: string): Promise<Question> {
+  async findOne(id: string): Promise<Exam> {
     return await this.model.findById(id).exec();
   }
 
   async create(
-    createQuestionDto: CreateQuestionDto,
+    createExamDto: CreateExamDto,
     authorization: string,
-  ): Promise<Question> {
+  ): Promise<Exam> {
     const accessToken = authorization.replace('Bearer ', '');
     const authUserDecode = await this.jwtService.decode(accessToken);
     const authRole = get(authUserDecode, 'role');
@@ -44,21 +44,18 @@ export class QuestionService {
     }
 
     return await new this.model({
-      ...createQuestionDto,
+      ...createExamDto,
       teacherId: authId,
       createdAt: dayjs().valueOf(),
     }).save();
   }
 
-  async update(
-    id: string,
-    updateQuestionDto: UpdateQuestionDto,
-  ): Promise<Question> {
+  async update(id: string, updateExamDto: UpdateExamDto): Promise<Exam> {
     return await this.model
       .findByIdAndUpdate(
         id,
         {
-          ...updateQuestionDto,
+          ...updateExamDto,
           updatedAt: dayjs().valueOf(),
         },
         { new: true },
@@ -66,7 +63,7 @@ export class QuestionService {
       .exec();
   }
 
-  async delete(id: string): Promise<Question> {
+  async delete(id: string): Promise<Exam> {
     return await this.model.findByIdAndDelete(id).exec();
   }
 }
