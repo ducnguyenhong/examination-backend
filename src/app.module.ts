@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { ExamHistoryModule } from './exam-history/exam-history.module';
 import { ExamModule } from './exam/exam.module';
 import { QuestionModule } from './question/question.module';
 import { TodoModule } from './todo/todo.module';
@@ -20,6 +21,7 @@ import { UserModule } from './user/user.module';
     UserModule,
     QuestionModule,
     ExamModule,
+    ExamHistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

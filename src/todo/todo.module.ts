@@ -11,8 +11,4 @@ import { TodoService } from './todo.service';
     MongooseModule.forFeature([{ name: Todo.name, schema: TodoSchema }]),
   ],
 })
-@Module({
-  providers: [TodoService],
-  controllers: [TodoController],
-})
 export class TodoModule {}

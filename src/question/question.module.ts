@@ -15,8 +15,4 @@ import { Question, QuestionSchema } from './schemas/question.schema';
     JwtModule,
   ],
 })
-@Module({
-  providers: [QuestionService],
-  controllers: [QuestionController],
-})
 export class QuestionModule {}

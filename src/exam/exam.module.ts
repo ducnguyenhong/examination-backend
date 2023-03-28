@@ -12,9 +12,6 @@ import { Exam, ExamSchema } from './schemas/exam.schema';
     MongooseModule.forFeature([{ name: Exam.name, schema: ExamSchema }]),
     JwtModule,
   ],
-})
-@Module({
-  providers: [ExamService],
-  controllers: [ExamController],
+  exports: [ExamService],
 })
 export class ExamModule {}
