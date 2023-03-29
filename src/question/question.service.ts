@@ -33,7 +33,7 @@ export class QuestionService {
     const authRole = get(authUserDecode, 'role');
     const authId = get(authUserDecode, 'id');
 
-    if (authRole !== 'TEACHER') {
+    if (!['TEACHER', 'ADMIN'].includes(authRole)) {
       throw new HttpException(
         {
           message: 'No execute permission',
@@ -45,7 +45,7 @@ export class QuestionService {
 
     return await new this.model({
       ...createQuestionDto,
-      teacherId: authId,
+      creatorId: authId,
       createdAt: dayjs().valueOf(),
     }).save();
   }

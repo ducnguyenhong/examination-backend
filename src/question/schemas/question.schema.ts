@@ -18,7 +18,7 @@ export class Question {
   subjectId: string;
 
   @Prop({ required: true })
-  teacherId: string;
+  creatorId: string;
 
   @Prop({ required: true })
   security: boolean;
