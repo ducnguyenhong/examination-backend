@@ -10,4 +10,5 @@ export class BaseUserDto {
   address?: string;
   phone?: string;
   gender?: 'MALE' | 'FEMALE';
+  id?: string;
 }

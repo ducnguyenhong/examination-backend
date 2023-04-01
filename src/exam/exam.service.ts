@@ -1,10 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
-import get from 'lodash/get';
 import { Model } from 'mongoose';
 import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
+import { BaseUserDto } from 'src/user/dto/base-user.dto';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { Exam, ExamDocument } from './schemas/exam.schema';
@@ -17,7 +18,7 @@ export class ExamService {
   ) {}
 
   async findAll(): Promise<Exam[]> {
-    return await this.model.find().exec();
+    return await this.model.find({ status: 'ACTIVE' }).exec();
   }
 
   async findOne(id: string): Promise<Exam> {
@@ -26,21 +27,15 @@ export class ExamService {
 
   async create(
     createExamDto: CreateExamDto,
-    authorization: string,
+    authUser: BaseUserDto,
   ): Promise<Exam> {
-    const accessToken = authorization.replace('Bearer ', '');
-    const authUserDecode = await this.jwtService.decode(accessToken);
-    const authRole = get(authUserDecode, 'role');
-    const authId = get(authUserDecode, 'id');
+    const { id: authId, role: authRole } = authUser;
 
     if (authRole !== 'TEACHER') {
-      throw new HttpException(
-        {
-          message: 'No execute permission',
-          code: NO_EXECUTE_PERMISSION,
-        },
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ForbiddenException({
+        code: NO_EXECUTE_PERMISSION,
+        message: 'No execute permission',
+      });
     }
 
     return await new this.model({
@@ -64,6 +59,7 @@ export class ExamService {
   }
 
   async delete(id: string): Promise<Exam> {
-    return await this.model.findByIdAndDelete(id).exec();
+    await this.model.findByIdAndUpdate(id, { status: 'INACTIVE' });
+    return null;
   }
 }

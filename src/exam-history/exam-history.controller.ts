@@ -1,17 +1,19 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  Headers,
   Param,
   Post,
+  Request,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FormatResponseInterceptor } from 'src/common/interceptors/format-response.interceptor';
 import { CreateExamHistoryDto } from './dto/create-exam-history.dto';
 import { ExamHistoryService } from './exam-history.service';
 
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(FormatResponseInterceptor)
 @Controller('exam-history')
 export class ExamHistoryController {
@@ -30,15 +32,12 @@ export class ExamHistoryController {
   @Post()
   async create(
     @Body() createExamHistoryDto: CreateExamHistoryDto,
-    @Headers() headers,
+    @Request() req,
   ) {
-    return await this.service.create(
-      createExamHistoryDto,
-      headers.authorization,
-    );
+    return await this.service.create(createExamHistoryDto, req.user);
   }
 
-  // @Put(':id')
+  // @Patch(':id')
   // async update(
   //   @Param('id') id: string,
   //   @Body() updateExamHistoryDto: UpdateExamHistoryDto,
@@ -46,8 +45,8 @@ export class ExamHistoryController {
   //   return await this.service.update(id, updateExamHistoryDto);
   // }
 
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return await this.service.delete(id);
-  }
+  // @Delete(':id')
+  // async delete(@Param('id') id: string) {
+  //   return await this.service.delete(id);
+  // }
 }

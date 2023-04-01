@@ -3,12 +3,15 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   Param,
+  Patch,
   Post,
-  Put,
+  Query,
+  Request,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FormatResponseInterceptor } from 'src/common/interceptors/format-response.interceptor';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -19,28 +22,36 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly service: UserService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  async index() {
-    return await this.service.findAll();
+  async index(@Query() query) {
+    return await this.service.findAll(query);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async find(@Param('id') id: string) {
     return await this.service.findOne(id);
   }
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto, @Headers() headers) {
-    return await this.service.create(createUserDto, headers.authorization);
+  async create(@Body() createUserDto: CreateUserDto, @Request() req) {
+    return await this.service.create(createUserDto, req.user);
   }
 
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.service.update(id, updateUserDto);
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Request() req,
+  ) {
+    return await this.service.update(id, updateUserDto, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return await this.service.delete(id);
+  async delete(@Param('id') id: string, @Request() req) {
+    return await this.service.delete(id, req.user);
   }
 }

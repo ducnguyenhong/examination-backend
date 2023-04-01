@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -8,7 +9,6 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import CryptoJS from 'crypto-js';
 import dayjs from 'dayjs';
-import get from 'lodash/get';
 import { Model } from 'mongoose';
 import { AES_SECRET_KEY_PASSWORD } from 'src/constant';
 import {
@@ -16,6 +16,7 @@ import {
   PASSWORD_IS_REQUIRED,
   USER_ALREADY_EXISTS,
 } from 'src/constant/response-code';
+import { BaseUserDto } from './dto/base-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
@@ -27,8 +28,13 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return await this.model.find().exec();
+  async findAll(query: Record<string, unknown>): Promise<User[]> {
+    const { role } = query || {};
+    if (role === 'ADMIN') {
+      return [];
+    }
+    const queryDb = { role, status: 'ACTIVE' };
+    return await this.model.find(queryDb, { password: 0, __v: 0 });
   }
 
   async findOne(id: string): Promise<User> {
@@ -39,44 +45,34 @@ export class UserService {
     return await this.model.findOne({ username }).exec();
   }
 
-  async findOneWithAccessToken(authorization: string): Promise<User> {
-    const accessToken = authorization.replace('Bearer ', '');
-    const currentUserDecode = await this.jwtService.decode(accessToken);
-    const username = get(currentUserDecode, 'username');
-    const currentUser = await this.model.findOne({ username });
+  async findOneWithAccessToken(authUser: BaseUserDto): Promise<User> {
+    const { username } = authUser;
+    const currentUser = await this.model.findOne({ username }, { password: 0 });
+
     if (!currentUser) {
       throw new UnauthorizedException();
     }
-    const { password, _id, ...rest } = currentUser.toObject();
-    return { id: _id, ...rest };
+    return currentUser;
   }
 
   async create(
     createUserDto: CreateUserDto,
-    authorization: string,
+    authUser: BaseUserDto,
   ): Promise<User> {
     const { role, password, username } = createUserDto;
     if (role !== 'STUDENT') {
-      if (!authorization || role === 'ADMIN') {
-        throw new HttpException(
-          {
-            message: 'No execute permission',
-            code: NO_EXECUTE_PERMISSION,
-          },
-          HttpStatus.FORBIDDEN,
-        );
+      if (!authUser.username || role === 'ADMIN') {
+        throw new ForbiddenException({
+          code: NO_EXECUTE_PERMISSION,
+          message: 'No execute permission',
+        });
       }
-      const accessToken = authorization.replace('Bearer ', '');
-      const authUserDecode = await this.jwtService.decode(accessToken);
-      const authRole = get(authUserDecode, 'role');
+      const { role: authRole } = authUser;
       if (role === 'TEACHER' && authRole !== 'ADMIN') {
-        throw new HttpException(
-          {
-            message: 'No execute permission',
-            code: NO_EXECUTE_PERMISSION,
-          },
-          HttpStatus.FORBIDDEN,
-        );
+        throw new ForbiddenException({
+          code: NO_EXECUTE_PERMISSION,
+          message: 'No execute permission',
+        });
       }
     }
     if (!password) {
@@ -123,7 +119,17 @@ export class UserService {
     return !!existsUsername;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    authUser: BaseUserDto,
+  ): Promise<User> {
+    if (authUser.id !== id) {
+      throw new ForbiddenException({
+        code: NO_EXECUTE_PERMISSION,
+        message: 'No execute permission',
+      });
+    }
     return await this.model
       .findByIdAndUpdate(id, {
         ...updateUserDto,
@@ -132,7 +138,14 @@ export class UserService {
       .exec();
   }
 
-  async delete(id: string): Promise<User> {
-    return await this.model.findByIdAndDelete(id).exec();
+  async delete(id: string, authUser: BaseUserDto): Promise<User> {
+    if (authUser.role !== 'ADMIN') {
+      throw new ForbiddenException({
+        code: NO_EXECUTE_PERMISSION,
+        message: 'No execute permission',
+      });
+    }
+    await this.model.findByIdAndUpdate(id, { status: 'INACTIVE' });
+    return null;
   }
 }

@@ -13,7 +13,7 @@ export class TodoService {
   ) {}
 
   async findAll(): Promise<Todo[]> {
-    return await this.model.find().exec();
+    return await this.model.find({ status: 'ACTIVE' }).exec();
   }
 
   async findOne(id: string): Promise<Todo> {
@@ -37,6 +37,7 @@ export class TodoService {
   }
 
   async delete(id: string): Promise<Todo> {
-    return await this.model.findByIdAndDelete(id).exec();
+    await this.model.findByIdAndUpdate(id, { status: 'INACTIVE' });
+    return null;
   }
 }

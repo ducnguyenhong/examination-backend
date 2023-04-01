@@ -1,10 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
-import get from 'lodash/get';
 import { Model } from 'mongoose';
 import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
+import { BaseUserDto } from 'src/user/dto/base-user.dto';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Question, QuestionDocument } from './schemas/question.schema';
@@ -17,7 +18,7 @@ export class QuestionService {
   ) {}
 
   async findAll(): Promise<Question[]> {
-    return await this.model.find().exec();
+    return await this.model.find({ status: 'ACTIVE' }).exec();
   }
 
   async findOne(id: string): Promise<Question> {
@@ -26,21 +27,15 @@ export class QuestionService {
 
   async create(
     createQuestionDto: CreateQuestionDto,
-    authorization: string,
+    authUser: BaseUserDto,
   ): Promise<Question> {
-    const accessToken = authorization.replace('Bearer ', '');
-    const authUserDecode = await this.jwtService.decode(accessToken);
-    const authRole = get(authUserDecode, 'role');
-    const authId = get(authUserDecode, 'id');
+    const { id: authId, role: authRole } = authUser;
 
     if (!['TEACHER', 'ADMIN'].includes(authRole)) {
-      throw new HttpException(
-        {
-          message: 'No execute permission',
-          code: NO_EXECUTE_PERMISSION,
-        },
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ForbiddenException({
+        code: NO_EXECUTE_PERMISSION,
+        message: 'No execute permission',
+      });
     }
 
     return await new this.model({
@@ -67,6 +62,7 @@ export class QuestionService {
   }
 
   async delete(id: string): Promise<Question> {
-    return await this.model.findByIdAndDelete(id).exec();
+    await this.model.findByIdAndUpdate(id, { status: 'INACTIVE' });
+    return null;
   }
 }

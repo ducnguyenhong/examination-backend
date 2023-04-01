@@ -3,17 +3,20 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   Param,
+  Patch,
   Post,
-  Put,
+  Request,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FormatResponseInterceptor } from 'src/common/interceptors/format-response.interceptor';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { ExamService } from './exam.service';
 
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(FormatResponseInterceptor)
 @Controller('exams')
 export class ExamController {
@@ -30,11 +33,11 @@ export class ExamController {
   }
 
   @Post()
-  async create(@Body() createExamDto: CreateExamDto, @Headers() headers) {
-    return await this.service.create(createExamDto, headers.authorization);
+  async create(@Body() createExamDto: CreateExamDto, @Request() req) {
+    return await this.service.create(createExamDto, req.user);
   }
 
-  @Put(':id')
+  @Patch(':id')
   async update(@Param('id') id: string, @Body() updateExamDto: UpdateExamDto) {
     return await this.service.update(id, updateExamDto);
   }

@@ -3,10 +3,10 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import CryptoJS from 'crypto-js';
 import dayjs from 'dayjs';
-import get from 'lodash/get';
 import { Model } from 'mongoose';
 import { AES_SECRET_KEY_PASSWORD } from 'src/constant';
 import { USERNAME_OR_PASSWORD_INCORRECT } from 'src/constant/response-code';
+import { BaseUserDto } from 'src/user/dto/base-user.dto';
 import { UserService } from '../user/user.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -70,10 +70,8 @@ export class AuthService {
     return { accessToken, expiredAt };
   }
 
-  async logout(authorization: string) {
-    const accessToken = authorization.replace('Bearer ', '');
-    const currentUserDecode = await this.jwtService.decode(accessToken);
-    const username = get(currentUserDecode, 'username');
+  async logout(authUser: BaseUserDto) {
+    const { username } = authUser;
     await this.model.findOneAndDelete({ username });
     return null;
   }

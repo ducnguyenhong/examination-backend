@@ -4,15 +4,18 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FormatResponseInterceptor } from 'src/common/interceptors/format-response.interceptor';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { TodoService } from './todo.service';
 
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(FormatResponseInterceptor)
 @Controller('todos')
 export class TodoController {
@@ -33,7 +36,7 @@ export class TodoController {
     return await this.service.create(createTodoDto);
   }
 
-  @Put(':id')
+  @Patch(':id')
   async update(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
     return await this.service.update(id, updateTodoDto);
   }

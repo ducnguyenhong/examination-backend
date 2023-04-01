@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Headers,
   Post,
   Request,
   UseGuards,
@@ -22,8 +21,8 @@ export class AppController {
   ) {}
 
   @Post('auth/register')
-  async register(@Request() req, @Headers() headers) {
-    return this.userService.create(req.body, headers.authorization);
+  async register(@Request() req) {
+    return this.userService.create(req.body, req.user);
   }
 
   @Post('auth/check-exists')
@@ -39,13 +38,13 @@ export class AppController {
 
   @UseGuards(LocalAuthGuard)
   @Post('auth/logout')
-  async logout(@Headers() headers) {
-    return this.authService.logout(headers.authorization);
+  async logout(@Request() req) {
+    return this.authService.logout(req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('user-info')
-  getProfile(@Headers() headers) {
-    return this.userService.findOneWithAccessToken(headers.authorization);
+  getProfile(@Request() req) {
+    return this.userService.findOneWithAccessToken(req.user);
   }
 }

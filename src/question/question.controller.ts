@@ -3,17 +3,20 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   Param,
+  Patch,
   Post,
-  Put,
+  Request,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FormatResponseInterceptor } from 'src/common/interceptors/format-response.interceptor';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { QuestionService } from './question.service';
 
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(FormatResponseInterceptor)
 @Controller('questions')
 export class QuestionController {
@@ -30,14 +33,11 @@ export class QuestionController {
   }
 
   @Post()
-  async create(
-    @Body() createQuestionDto: CreateQuestionDto,
-    @Headers() headers,
-  ) {
-    return await this.service.create(createQuestionDto, headers.authorization);
+  async create(@Body() createQuestionDto: CreateQuestionDto, @Request() req) {
+    return await this.service.create(createQuestionDto, req.user);
   }
 
-  @Put(':id')
+  @Patch(':id')
   async update(
     @Param('id') id: string,
     @Body() updateQuestionDto: UpdateQuestionDto,
