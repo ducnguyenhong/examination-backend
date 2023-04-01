@@ -17,8 +17,26 @@ export class ExamService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async findAll(): Promise<Exam[]> {
-    return await this.model.find({ status: 'ACTIVE' }).exec();
+  async findAll(query: Record<string, unknown>): Promise<any> {
+    const { page, size } = query || {};
+    const pageQuery = Number(page) || 1;
+    const sizeQuery = Number(size) || 10;
+    const queryDb = { status: 'ACTIVE' };
+    const numOfItem = await this.model.count(queryDb);
+
+    const dataList = await this.model
+      .find(queryDb)
+      .limit(sizeQuery)
+      .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+
+    return {
+      data: dataList,
+      pagination: {
+        page: pageQuery,
+        size: sizeQuery,
+        total: numOfItem,
+      },
+    };
   }
 
   async findOne(id: string): Promise<Exam> {

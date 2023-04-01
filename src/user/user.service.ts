@@ -28,13 +28,29 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async findAll(query: Record<string, unknown>): Promise<User[]> {
-    const { role } = query || {};
+  async findAll(query: Record<string, unknown>): Promise<any> {
+    const { role, page, size } = query || {};
     if (role === 'ADMIN') {
       return [];
     }
+    const pageQuery = Number(page) || 1;
+    const sizeQuery = Number(size) || 10;
     const queryDb = { role, status: 'ACTIVE' };
-    return await this.model.find(queryDb, { password: 0, __v: 0 });
+    const numOfItem = await this.model.count(queryDb);
+
+    const dataList = await this.model
+      .find(queryDb, { password: 0, __v: 0 })
+      .limit(sizeQuery)
+      .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+
+    return {
+      data: dataList,
+      pagination: {
+        page: pageQuery,
+        size: sizeQuery,
+        total: numOfItem,
+      },
+    };
   }
 
   async findOne(id: string): Promise<User> {

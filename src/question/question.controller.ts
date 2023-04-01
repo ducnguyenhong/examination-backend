@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
   UseInterceptors,
@@ -23,8 +24,8 @@ export class QuestionController {
   constructor(private readonly service: QuestionService) {}
 
   @Get()
-  async index() {
-    return await this.service.findAll();
+  async index(@Query() query) {
+    return await this.service.findAll(query);
   }
 
   @Get(':id')

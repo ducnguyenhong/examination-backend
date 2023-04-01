@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -22,8 +23,8 @@ export class TodoController {
   constructor(private readonly service: TodoService) {}
 
   @Get()
-  async index() {
-    return await this.service.findAll();
+  async index(@Query() query) {
+    return await this.service.findAll(query);
   }
 
   @Get(':id')

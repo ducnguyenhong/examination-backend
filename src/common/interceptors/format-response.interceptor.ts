@@ -10,8 +10,18 @@ import { map, Observable } from 'rxjs';
 export class FormatResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      map((data) => {
-        return { data, message: 'OK' };
+      map((res) => {
+        if (res.pagination) {
+          return {
+            data: res.data,
+            message: 'OK',
+            pagination: res.pagination,
+          };
+        }
+        return {
+          data: res,
+          message: 'OK',
+        };
       }),
     );
   }

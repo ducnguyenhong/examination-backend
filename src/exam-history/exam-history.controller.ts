@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Request,
   UseGuards,
   UseInterceptors,
@@ -20,8 +21,8 @@ export class ExamHistoryController {
   constructor(private readonly service: ExamHistoryService) {}
 
   @Get()
-  async index() {
-    return await this.service.findAll();
+  async index(@Query() query) {
+    return await this.service.findAll(query);
   }
 
   @Get(':id')
