@@ -1,7 +1,7 @@
 export class BaseExamDto {
   title: string;
   subjectId: string;
-  // teacherId: string;
+  // creatorId: string;
   questionIds: string[];
   password?: string;
 }

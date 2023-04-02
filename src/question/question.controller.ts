@@ -47,7 +47,7 @@ export class QuestionController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return await this.service.delete(id);
+  async delete(@Param('id') id: string, @Request() req) {
+    return await this.service.delete(id, req.user);
   }
 }

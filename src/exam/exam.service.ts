@@ -58,7 +58,7 @@ export class ExamService {
 
     return await new this.model({
       ...createExamDto,
-      teacherId: authId,
+      creatorId: authId,
       createdAt: dayjs().valueOf(),
       status: 'ACTIVE',
     }).save();
@@ -77,7 +77,18 @@ export class ExamService {
       .exec();
   }
 
-  async delete(id: string): Promise<Exam> {
+  async delete(id: string, authUser: BaseUserDto): Promise<Exam> {
+    const { role: authRole, id: authId } = authUser;
+    const question = await this.model.findById(id);
+    if (
+      (authRole === 'TEACHER' && question.creatorId !== authId) ||
+      authRole !== 'ADMIN'
+    ) {
+      throw new ForbiddenException({
+        code: NO_EXECUTE_PERMISSION,
+        message: 'No execute permission',
+      });
+    }
     await this.model.findByIdAndUpdate(id, { status: 'INACTIVE' });
     return null;
   }

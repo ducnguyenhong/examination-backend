@@ -81,7 +81,18 @@ export class QuestionService {
       .exec();
   }
 
-  async delete(id: string): Promise<Question> {
+  async delete(id: string, authUser: BaseUserDto): Promise<Question> {
+    const { role: authRole, id: authId } = authUser;
+    const question = await this.model.findById(id);
+    if (
+      (authRole === 'TEACHER' && question.creatorId !== authId) ||
+      authRole !== 'ADMIN'
+    ) {
+      throw new ForbiddenException({
+        code: NO_EXECUTE_PERMISSION,
+        message: 'No execute permission',
+      });
+    }
     await this.model.findByIdAndUpdate(id, { status: 'INACTIVE' });
     return null;
   }

@@ -12,7 +12,7 @@ export class Exam {
   subjectId: string;
 
   @Prop({ required: true })
-  teacherId: string;
+  creatorId: string;
 
   @Prop({ required: true })
   questionIds: string[];
