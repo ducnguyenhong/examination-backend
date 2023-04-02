@@ -11,7 +11,7 @@ export class FormatResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((res) => {
-        if (res.pagination) {
+        if (res?.pagination) {
           return {
             data: res.data,
             message: 'OK',

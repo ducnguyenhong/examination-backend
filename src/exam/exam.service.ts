@@ -80,9 +80,10 @@ export class ExamService {
   async delete(id: string, authUser: BaseUserDto): Promise<Exam> {
     const { role: authRole, id: authId } = authUser;
     const question = await this.model.findById(id);
+
     if (
       (authRole === 'TEACHER' && question.creatorId !== authId) ||
-      authRole !== 'ADMIN'
+      authRole === 'STUDENT'
     ) {
       throw new ForbiddenException({
         code: NO_EXECUTE_PERMISSION,
