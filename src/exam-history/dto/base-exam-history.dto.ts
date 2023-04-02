@@ -6,5 +6,4 @@ export class BaseExamHistoryDto {
   startedAt: number;
   periodTime: number;
   examId?: string;
-  status: 'ACTIVE' | 'INACTIVE';
 }

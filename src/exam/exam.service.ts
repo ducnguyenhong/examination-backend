@@ -60,6 +60,7 @@ export class ExamService {
       ...createExamDto,
       teacherId: authId,
       createdAt: dayjs().valueOf(),
+      status: 'ACTIVE',
     }).save();
   }
 

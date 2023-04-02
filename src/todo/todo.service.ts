@@ -42,6 +42,7 @@ export class TodoService {
     return await new this.model({
       ...createTodoDto,
       createdAt: dayjs().valueOf(),
+      status: 'ACTIVE',
     }).save();
   }
 

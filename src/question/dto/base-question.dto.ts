@@ -5,6 +5,5 @@ export class BaseQuestionDto {
   subjectId: string;
   // creatorId: string;
   security: boolean;
-  status: 'ACTIVE' | 'INACTIVE';
   explanation: string;
 }

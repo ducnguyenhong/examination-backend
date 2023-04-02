@@ -22,7 +22,7 @@ export class AppController {
 
   @Post('auth/register')
   async register(@Request() req) {
-    return this.userService.create(req.body, req.user);
+    return this.userService.register(req.body);
   }
 
   @Post('auth/check-exists')

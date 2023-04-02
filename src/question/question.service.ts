@@ -61,6 +61,7 @@ export class QuestionService {
       ...createQuestionDto,
       creatorId: authId,
       createdAt: dayjs().valueOf(),
+      status: 'ACTIVE',
     }).save();
   }
 

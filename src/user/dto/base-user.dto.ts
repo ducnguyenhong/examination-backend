@@ -3,7 +3,6 @@ export class BaseUserDto {
   password: string;
   fullName: string;
   role: 'ADMIN' | 'TEACHER' | 'STUDENT';
-  status: 'ACTIVE' | 'INACTIVE';
   subjectIds?: string[];
   avatar?: string;
   school?: string;

@@ -34,6 +34,7 @@ export class UserController {
     return await this.service.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() createUserDto: CreateUserDto, @Request() req) {
     return await this.service.create(createUserDto, req.user);

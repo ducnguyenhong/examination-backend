@@ -76,6 +76,7 @@ export class ExamHistoryService {
       title,
       studentId: authId,
       createdAt: dayjs().valueOf(),
+      status: 'ACTIVE',
     }).save();
   }
 
