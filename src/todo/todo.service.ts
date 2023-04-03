@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
+import identity from 'lodash/identity';
+import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -13,10 +15,14 @@ export class TodoService {
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size } = query || {};
+    const { page, size, keyword = '' } = query || {};
+
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
-    const queryDb = { status: 'ACTIVE' };
+    const queryDb = pickBy(
+      { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' } },
+      identity,
+    );
     const numOfItem = await this.model.count(queryDb);
 
     const dataList = await this.model

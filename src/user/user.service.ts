@@ -9,6 +9,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import CryptoJS from 'crypto-js';
 import dayjs from 'dayjs';
+import identity from 'lodash/identity';
+import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
 import { AES_SECRET_KEY_PASSWORD } from 'src/constant';
 import {
@@ -29,13 +31,21 @@ export class UserService {
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { role, page, size } = query || {};
+    const { role, page, size, keyword = '' } = query || {};
     if (role === 'ADMIN') {
       return [];
     }
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
-    const queryDb = { role, status: 'ACTIVE' };
+    const queryDb = pickBy(
+      {
+        role,
+        status: 'ACTIVE',
+        fullName: { $regex: '.*' + keyword + '.*' },
+        username: { $regex: '.*' + keyword + '.*' },
+      },
+      identity,
+    );
     const numOfItem = await this.model.count(queryDb);
 
     const dataList = await this.model

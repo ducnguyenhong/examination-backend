@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ForbiddenException } from '@nestjs/common/exceptions';
-import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
+import identity from 'lodash/identity';
+import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
 import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
 import { BaseUserDto } from 'src/user/dto/base-user.dto';
@@ -14,14 +15,17 @@ import { Exam, ExamDocument } from './schemas/exam.schema';
 export class ExamService {
   constructor(
     @InjectModel(Exam.name) private readonly model: Model<ExamDocument>,
-    private readonly jwtService: JwtService,
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size } = query || {};
+    const { page, size, keyword = '' } = query || {};
+
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
-    const queryDb = { status: 'ACTIVE' };
+    const queryDb = pickBy(
+      { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' } },
+      identity,
+    );
     const numOfItem = await this.model.count(queryDb);
 
     const dataList = await this.model
@@ -61,6 +65,7 @@ export class ExamService {
       creatorId: authId,
       createdAt: dayjs().valueOf(),
       status: 'ACTIVE',
+      publishAt: createExamDto?.publishAt || dayjs().valueOf(),
     }).save();
   }
 

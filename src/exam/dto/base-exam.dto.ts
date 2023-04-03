@@ -3,5 +3,6 @@ export class BaseExamDto {
   subjectId: string;
   // creatorId: string;
   questionIds: string[];
+  publishAt?: number;
   password?: string;
 }

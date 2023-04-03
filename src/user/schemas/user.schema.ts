@@ -27,6 +27,12 @@ export class User {
   subjectIds?: string[];
 
   @Prop()
+  followers?: string[];
+
+  @Prop()
+  following?: string[];
+
+  @Prop()
   avatar?: string;
 
   @Prop()

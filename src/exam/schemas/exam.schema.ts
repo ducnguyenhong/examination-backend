@@ -29,6 +29,9 @@ export class Exam {
   @Prop({ required: true })
   createdAt: number;
 
+  @Prop({ required: true })
+  publishAt: number;
+
   @Prop()
   deletedAt?: number;
 }

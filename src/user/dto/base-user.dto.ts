@@ -4,6 +4,8 @@ export class BaseUserDto {
   fullName: string;
   role: 'ADMIN' | 'TEACHER' | 'STUDENT';
   subjectIds?: string[];
+  followers?: string[];
+  following?: string[];
   avatar?: string;
   school?: string;
   address?: string;
