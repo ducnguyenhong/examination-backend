@@ -42,7 +42,7 @@ export class UserService {
         role,
         status: 'ACTIVE',
         fullName: { $regex: '.*' + keyword + '.*' },
-        username: { $regex: '.*' + keyword + '.*' },
+        // username: { $regex: '.*' + keyword + '.*' },
       },
       identity,
     );
