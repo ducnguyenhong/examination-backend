@@ -55,4 +55,16 @@ export class UserController {
   async delete(@Param('id') id: string, @Request() req) {
     return await this.service.delete(id, req.user);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('follow')
+  async follow(@Body() body: { followIds: string[] }, @Request() req) {
+    return await this.service.follow(body, req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('unfollow')
+  async unFollow(@Body() body: { followIds: string[] }, @Request() req) {
+    return await this.service.unFollow(body, req.user);
+  }
 }

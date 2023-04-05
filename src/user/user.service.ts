@@ -10,10 +10,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import CryptoJS from 'crypto-js';
 import dayjs from 'dayjs';
 import identity from 'lodash/identity';
+import isEmpty from 'lodash/isEmpty';
 import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
 import { AES_SECRET_KEY_PASSWORD } from 'src/constant';
 import {
+  FOLLOW_IDS_IS_REQUIRED,
   NO_EXECUTE_PERMISSION,
   PASSWORD_IS_REQUIRED,
   USER_ALREADY_EXISTS,
@@ -224,6 +226,102 @@ export class UserService {
       });
     }
     await this.model.findByIdAndUpdate(id, { status: 'INACTIVE' });
+    return null;
+  }
+
+  async follow(
+    body: { followIds: string[] },
+    authUser: BaseUserDto,
+  ): Promise<User> {
+    const { followIds } = body || {};
+    const { id: authId, role: authRole } = authUser;
+
+    if (authRole !== 'STUDENT') {
+      throw new ForbiddenException({
+        code: NO_EXECUTE_PERMISSION,
+        message: 'No execute permission',
+      });
+    }
+
+    if (isEmpty(followIds)) {
+      throw new HttpException(
+        {
+          message: 'followIds is required',
+          code: FOLLOW_IDS_IS_REQUIRED,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const currentUser = await this.model.findById(authId);
+    const oldFollowing = currentUser.following || [];
+
+    await this.model.findOneAndUpdate(
+      { _id: authId },
+      {
+        following: [...oldFollowing, ...followIds],
+      },
+    );
+
+    await Promise.all(
+      followIds.map(async (item) => {
+        const teacher = await this.model.findById(item);
+        const oldFollowers = teacher.followers || [];
+        await this.model.findOneAndUpdate(
+          { _id: item },
+          { followers: [...oldFollowers, authId] },
+        );
+      }),
+    );
+
+    return null;
+  }
+
+  async unFollow(
+    body: { followIds: string[] },
+    authUser: BaseUserDto,
+  ): Promise<User> {
+    const { followIds } = body || {};
+    const { id: authId, role: authRole } = authUser;
+
+    if (authRole !== 'STUDENT') {
+      throw new ForbiddenException({
+        code: NO_EXECUTE_PERMISSION,
+        message: 'No execute permission',
+      });
+    }
+
+    if (isEmpty(followIds)) {
+      throw new HttpException(
+        {
+          message: 'followIds is required',
+          code: FOLLOW_IDS_IS_REQUIRED,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const currentUser = await this.model.findById(authId);
+    const oldFollowing = currentUser.following || [];
+
+    await this.model.findOneAndUpdate(
+      { _id: authId },
+      {
+        following: oldFollowing.filter((item) => !followIds.includes(item)),
+      },
+    );
+
+    await Promise.all(
+      followIds.map(async (item) => {
+        const teacher = await this.model.findById(item);
+        const oldFollowers = teacher.followers || [];
+        await this.model.findOneAndUpdate(
+          { _id: item },
+          { followers: oldFollowers.filter((i) => i !== authId) },
+        );
+      }),
+    );
+
     return null;
   }
 }
