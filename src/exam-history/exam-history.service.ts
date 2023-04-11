@@ -67,21 +67,23 @@ export class ExamHistoryService {
     }
 
     const { examId } = createExamHistoryDto;
-    let title = '';
-    if (!examId) {
-      title = 'Đề thi ngẫu nhiên';
-    } else {
-      const exam = await this.examService.findOne(examId);
-      title = exam.title;
-    }
+    const exam = await this.examService.findOne(examId);
+    const title = examId ? exam.title : 'Đề thi ngẫu nhiên';
 
-    return await new this.model({
+    const response = await new this.model({
       ...createExamHistoryDto,
       title,
       studentId: authId,
       createdAt: dayjs().valueOf(),
       status: 'ACTIVE',
     }).save();
+
+    await this.examService.update(examId, {
+      numOfUse: exam.numOfUse + 1,
+      updatedAt: dayjs().valueOf(),
+    });
+
+    return response;
   }
 
   async update(

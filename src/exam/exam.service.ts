@@ -65,6 +65,7 @@ export class ExamService {
       creatorId: authId,
       createdAt: dayjs().valueOf(),
       status: 'ACTIVE',
+      numOfUse: 0,
       publishAt: createExamDto?.publishAt || dayjs().valueOf(),
     }).save();
   }

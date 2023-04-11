@@ -17,6 +17,9 @@ export class Exam {
   @Prop({ required: true })
   questionIds: string[];
 
+  @Prop({ required: true })
+  numOfUse: number;
+
   @Prop()
   password?: string;
 

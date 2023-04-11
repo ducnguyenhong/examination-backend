@@ -1,5 +1,5 @@
 import { BaseTodoDto } from './base-todo.dto';
 
 export class UpdateTodoDto extends BaseTodoDto {
-  updatedAt: Date;
+  updatedAt: number;
 }

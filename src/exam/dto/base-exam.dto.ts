@@ -1,8 +1,8 @@
 export class BaseExamDto {
-  title: string;
-  subjectId: string;
+  title?: string;
+  subjectId?: string;
   // creatorId: string;
-  questionIds: string[];
+  questionIds?: string[];
   publishAt?: number;
   password?: string;
 }
