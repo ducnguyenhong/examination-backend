@@ -27,6 +27,9 @@ export class User {
   subjectIds?: string[];
 
   @Prop()
+  numOfExam?: number;
+
+  @Prop()
   followers?: string[];
 
   @Prop()

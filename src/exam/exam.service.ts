@@ -7,6 +7,7 @@ import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
 import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
 import { BaseUserDto } from 'src/user/dto/base-user.dto';
+import { UserService } from 'src/user/user.service';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { Exam, ExamDocument } from './schemas/exam.schema';
@@ -15,15 +16,20 @@ import { Exam, ExamDocument } from './schemas/exam.schema';
 export class ExamService {
   constructor(
     @InjectModel(Exam.name) private readonly model: Model<ExamDocument>,
+    private readonly userService: UserService,
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size, keyword = '' } = query || {};
+    const { page, size, keyword = '', creatorId } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
     const queryDb = pickBy(
-      { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' } },
+      {
+        status: 'ACTIVE',
+        title: { $regex: '.*' + keyword + '.*' },
+        creatorId,
+      },
       identity,
     );
     const numOfItem = await this.model.count(queryDb);
@@ -60,7 +66,7 @@ export class ExamService {
       });
     }
 
-    return await new this.model({
+    const response = await new this.model({
       ...createExamDto,
       creatorId: authId,
       createdAt: dayjs().valueOf(),
@@ -68,6 +74,17 @@ export class ExamService {
       numOfUse: 0,
       publishAt: createExamDto?.publishAt || dayjs().valueOf(),
     }).save();
+    const currentCreator = await this.userService.findOne(authId);
+    const oldNumOfExam = currentCreator.numOfExam || 0;
+    await this.userService.update(
+      authId,
+      {
+        numOfExam: oldNumOfExam + 1,
+      },
+      authUser,
+    );
+
+    return response;
   }
 
   async update(id: string, updateExamDto: UpdateExamDto): Promise<Exam> {
