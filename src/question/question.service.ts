@@ -18,12 +18,12 @@ export class QuestionService {
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size, keyword = '' } = query || {};
+    const { page, size, keyword = '', creatorId } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
     const queryDb = pickBy(
-      { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' } },
+      { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' }, creatorId },
       identity,
     );
     const numOfItem = await this.model.count(queryDb);
