@@ -1,11 +1,16 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import axios from 'axios';
 import CryptoJS from 'crypto-js';
 import dayjs from 'dayjs';
 import { Model } from 'mongoose';
 import { AES_SECRET_KEY_PASSWORD } from 'src/constant';
-import { USERNAME_OR_PASSWORD_INCORRECT } from 'src/constant/response-code';
+import {
+  ERROR_UPLOAD_CDN,
+  USERNAME_OR_PASSWORD_INCORRECT,
+} from 'src/constant/response-code';
+import { CLIENT_ID, URL_CDN } from 'src/constant/upload-cdn';
 import { BaseUserDto } from 'src/user/dto/base-user.dto';
 import { UserService } from '../user/user.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -98,5 +103,32 @@ export class AuthService {
         updatedAt: dayjs().valueOf(),
       })
       .exec();
+  }
+
+  async uploadFile(file: Express.Multer.File): Promise<{ url: string }> {
+    const base64Data = Buffer.from(file.buffer).toString('base64');
+
+    const formData = new FormData();
+    formData.append('image', base64Data);
+    return await axios
+      .post(URL_CDN, formData, {
+        headers: {
+          authorization: `Client-ID ${CLIENT_ID}`,
+        },
+      })
+      .then((res: any) => {
+        return {
+          url: res.data?.data?.link,
+        };
+      })
+      .catch((e) => {
+        throw new HttpException(
+          {
+            message: e.message,
+            code: ERROR_UPLOAD_CDN,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      });
   }
 }

@@ -6,6 +6,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { UploadedFile } from '@nestjs/common/decorators';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { LocalAuthGuard } from './auth/guards/local-auth.guard';
@@ -46,5 +48,12 @@ export class AppController {
   @Get('user-info')
   getProfile(@Request() req) {
     return this.userService.findOneWithAccessToken(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.authService.uploadFile(file);
   }
 }
