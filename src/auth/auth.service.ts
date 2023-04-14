@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
 import CryptoJS from 'crypto-js';
 import dayjs from 'dayjs';
+import FormData from 'form-data';
 import { Model } from 'mongoose';
 import { AES_SECRET_KEY_PASSWORD } from 'src/constant';
 import {
