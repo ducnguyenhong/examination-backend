@@ -38,7 +38,7 @@ export class AppController {
     return this.authService.login(req.user);
   }
 
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('auth/logout')
   async logout(@Request() req) {
     return this.authService.logout(req.user);
