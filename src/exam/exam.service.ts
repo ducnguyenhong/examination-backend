@@ -20,7 +20,7 @@ export class ExamService {
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size, keyword = '', creatorId } = query || {};
+    const { page, size, keyword = '', creatorId, subjectId } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
@@ -29,6 +29,7 @@ export class ExamService {
         status: 'ACTIVE',
         title: { $regex: '.*' + keyword + '.*' },
         creatorId,
+        subjectId,
       },
       identity,
     );
