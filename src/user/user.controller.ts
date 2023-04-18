@@ -29,6 +29,12 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('following')
+  async findFollowing(@Query() query, @Request() req) {
+    return await this.service.findFollowing(query, req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async find(@Param('id') id: string) {
     return await this.service.findOne(id);

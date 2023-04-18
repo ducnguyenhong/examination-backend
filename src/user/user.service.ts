@@ -70,6 +70,59 @@ export class UserService {
     };
   }
 
+  async findFollowing(
+    query: Record<string, unknown>,
+    authUser: BaseUserDto,
+  ): Promise<any> {
+    const { role, page, size, keyword = '', subjectId } = query || {};
+    const { id: authId } = authUser;
+
+    if (role === 'TEACHER') {
+      return [];
+    }
+
+    const currentUser = await this.model.findById(authId);
+    const { following } = currentUser.toObject();
+
+    if (!following.length) {
+      return [];
+    }
+
+    const pageQuery = Number(page) || 1;
+    const sizeQuery = Number(size) || 10;
+    const queryDb = pickBy(
+      {
+        role: 'TEACHER',
+        status: 'ACTIVE',
+        fullName: { $regex: '.*' + keyword + '.*' },
+        _id: {
+          $in: following,
+        },
+      },
+      identity,
+    );
+
+    if (subjectId) {
+      queryDb.subjectIds = { $in: [subjectId] };
+    }
+
+    const numOfItem = await this.model.count(queryDb);
+
+    const dataList = await this.model
+      .find(queryDb, { password: 0, __v: 0 })
+      .limit(sizeQuery)
+      .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+
+    return {
+      data: dataList,
+      pagination: {
+        page: pageQuery,
+        size: sizeQuery,
+        total: numOfItem,
+      },
+    };
+  }
+
   async findOne(id: string): Promise<User> {
     return await this.model.findById(id);
   }
