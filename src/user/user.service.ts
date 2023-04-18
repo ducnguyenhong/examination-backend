@@ -33,7 +33,7 @@ export class UserService {
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { role, page, size, keyword = '' } = query || {};
+    const { role, page, size, keyword = '', subjectId } = query || {};
     if (role === 'ADMIN') {
       return [];
     }
@@ -44,6 +44,7 @@ export class UserService {
         role,
         status: 'ACTIVE',
         fullName: { $regex: '.*' + keyword + '.*' },
+        subjectId,
         // username: { $regex: '.*' + keyword + '.*' },
       },
       identity,

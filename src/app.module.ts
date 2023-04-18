@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { ExamHistoryModule } from './exam-history/exam-history.module';
 import { ExamModule } from './exam/exam.module';
 import { QuestionModule } from './question/question.module';
+import { SubjectModule } from './subject/subject.module';
 import { TodoModule } from './todo/todo.module';
 import { UserModule } from './user/user.module';
 
@@ -22,6 +23,7 @@ import { UserModule } from './user/user.module';
     QuestionModule,
     ExamModule,
     ExamHistoryModule,
+    SubjectModule,
   ],
   controllers: [AppController],
   providers: [AppService],
