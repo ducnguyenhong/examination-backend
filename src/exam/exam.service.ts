@@ -46,6 +46,7 @@ export class ExamService {
         const creator = await this.userService.findOne(creatorId);
         return {
           ...rest,
+          creatorId,
           creatorFullName: creator.fullName,
         };
       }),
