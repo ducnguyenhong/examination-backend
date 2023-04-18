@@ -44,11 +44,15 @@ export class UserService {
         role,
         status: 'ACTIVE',
         fullName: { $regex: '.*' + keyword + '.*' },
-        subjectId,
         // username: { $regex: '.*' + keyword + '.*' },
       },
       identity,
     );
+
+    if (subjectId) {
+      queryDb.subjectIds = { $in: [subjectId] };
+    }
+
     const numOfItem = await this.model.count(queryDb);
 
     const dataList = await this.model
