@@ -40,8 +40,19 @@ export class ExamService {
       .limit(sizeQuery)
       .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
 
+    const examList = await Promise.all(
+      dataList.map(async (item) => {
+        const { creatorId, ...rest } = item.toObject();
+        const creator = await this.userService.findOne(creatorId);
+        return {
+          ...rest,
+          creatorFullName: creator.fullName,
+        };
+      }),
+    );
+
     return {
-      data: dataList,
+      data: examList,
       pagination: {
         page: pageQuery,
         size: sizeQuery,
