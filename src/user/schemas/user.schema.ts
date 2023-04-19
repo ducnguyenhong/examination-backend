@@ -36,6 +36,9 @@ export class User {
   following?: string[];
 
   @Prop()
+  isFollowing?: boolean;
+
+  @Prop()
   avatar?: string;
 
   @Prop()

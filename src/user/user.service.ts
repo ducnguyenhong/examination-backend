@@ -141,8 +141,28 @@ export class UserService {
     };
   }
 
-  async findOne(id: string): Promise<User> {
-    return await this.model.findById(id);
+  async findOne(id: string, authUser?: BaseUserDto): Promise<any> {
+    const { id: authId } = authUser || {};
+    const userDetail = await this.model.findOne(
+      { _id: id },
+      {
+        password: 0,
+        createdAt: 0,
+        updatedAt: 0,
+        __v: 0,
+      },
+    );
+
+    const { followers = [], _id, ...rest } = userDetail.toObject();
+
+    console.log('ducnh _id', _id);
+
+    return {
+      ...rest,
+      id,
+      followers,
+      isFollowing: followers.includes(authId),
+    };
   }
 
   async findOneWithUsername(username: string): Promise<User> {
