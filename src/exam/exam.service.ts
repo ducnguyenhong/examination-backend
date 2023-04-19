@@ -12,6 +12,15 @@ import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { Exam, ExamDocument } from './schemas/exam.schema';
 
+interface QueryFindAll {
+  page?: number | string;
+  size?: number | string;
+  keyword?: number | string;
+  creatorId?: string;
+  subjectId?: string;
+  sort?: string;
+}
+
 @Injectable()
 export class ExamService {
   constructor(
@@ -19,8 +28,15 @@ export class ExamService {
     private readonly userService: UserService,
   ) {}
 
-  async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size, keyword = '', creatorId, subjectId } = query || {};
+  async findAll(query: QueryFindAll): Promise<any> {
+    const {
+      page,
+      size,
+      keyword = '',
+      creatorId,
+      subjectId,
+      sort,
+    } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
@@ -33,10 +49,22 @@ export class ExamService {
       },
       identity,
     );
+    const querySort = {};
+    if (sort) {
+      const [field, type] = sort.split(' ');
+      if (type === 'asc') {
+        querySort[field] = 1;
+      }
+      if (type === 'desc') {
+        querySort[field] = -1;
+      }
+    }
+
     const numOfItem = await this.model.count(queryDb);
 
     const dataList = await this.model
       .find(queryDb)
+      .sort(querySort)
       .limit(sizeQuery)
       .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
 

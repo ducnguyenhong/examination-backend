@@ -5,7 +5,6 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import CryptoJS from 'crypto-js';
 import dayjs from 'dayjs';
@@ -25,15 +24,23 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
 
+interface QueryFindAll {
+  page?: number | string;
+  size?: number | string;
+  keyword?: number | string;
+  subjectId?: string;
+  sort?: string;
+  role?: string;
+}
+
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private readonly model: Model<UserDocument>,
-    private readonly jwtService: JwtService,
   ) {}
 
-  async findAll(query: Record<string, unknown>): Promise<any> {
-    const { role, page, size, keyword = '', subjectId } = query || {};
+  async findAll(query: QueryFindAll): Promise<any> {
+    const { role, page, size, keyword = '', subjectId, sort } = query || {};
     if (role === 'ADMIN') {
       return [];
     }
@@ -48,6 +55,16 @@ export class UserService {
       },
       identity,
     );
+    const querySort = {};
+    if (sort) {
+      const [field, type] = sort.split(' ');
+      if (type === 'asc') {
+        querySort[field] = 1;
+      }
+      if (type === 'desc') {
+        querySort[field] = -1;
+      }
+    }
 
     if (subjectId) {
       queryDb.subjectIds = { $in: [subjectId] };
@@ -57,6 +74,7 @@ export class UserService {
 
     const dataList = await this.model
       .find(queryDb, { password: 0, __v: 0 })
+      .sort(querySort)
       .limit(sizeQuery)
       .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
 
@@ -244,6 +262,7 @@ export class UserService {
       password: encryptPassword,
       createdAt: dayjs().valueOf(),
       status: 'ACTIVE',
+      numOfExam: 0,
     })
       .save()
       .then((response) => {
