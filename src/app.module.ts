@@ -9,6 +9,7 @@ import { ExamModule } from './exam/exam.module';
 import { QuestionModule } from './question/question.module';
 import { SubjectModule } from './subject/subject.module';
 import { TodoModule } from './todo/todo.module';
+import { TopicModule } from './topic/topic.module';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { UserModule } from './user/user.module';
     ExamModule,
     ExamHistoryModule,
     SubjectModule,
+    TopicModule,
   ],
   controllers: [AppController],
   providers: [AppService],
