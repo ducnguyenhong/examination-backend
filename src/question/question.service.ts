@@ -18,7 +18,15 @@ export class QuestionService {
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size, keyword = '', creatorId, random } = query || {};
+    const {
+      page,
+      size,
+      keyword = '',
+      creatorId,
+      random,
+      subjectId,
+      level,
+    } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
@@ -28,6 +36,8 @@ export class QuestionService {
         status: 'ACTIVE',
         title: { $regex: '.*' + keyword + '.*' },
         creatorId,
+        subjectId,
+        level,
       },
       identity,
     );

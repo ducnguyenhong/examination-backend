@@ -195,7 +195,6 @@ export class ExamService {
       password: '',
       status: 'ACTIVE',
       creatorId: authId,
-      numOfUse: 0,
     };
   }
 
