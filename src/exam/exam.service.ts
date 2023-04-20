@@ -184,12 +184,14 @@ export class ExamService {
           ...questionLv2,
           ...questionLv3,
           ...questionLv4,
-        ].map((i) => i._id);
+        ]
+          .map((i) => i._id)
+          .slice(0, subject.questionNumber);
       }),
     );
 
     return {
-      title: `Đề thi ngẫu nhiên môn ${subject?.label}`,
+      title: `Đề thi ngẫu nhiên môn ${subject.label}`,
       subjectId,
       questionIds,
       password: '',
