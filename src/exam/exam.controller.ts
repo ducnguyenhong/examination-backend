@@ -28,6 +28,11 @@ export class ExamController {
     return await this.service.findAll(query);
   }
 
+  @Get('random')
+  async createRandom(@Request() req) {
+    return await this.service.createRandom(req.query?.subjectId, req.user);
+  }
+
   @Get(':id')
   async find(@Param('id') id: string) {
     return await this.service.findOne(id);

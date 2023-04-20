@@ -6,6 +6,9 @@ import identity from 'lodash/identity';
 import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
 import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
+import { QuestionService } from 'src/question/question.service';
+import { SubjectService } from 'src/subject/subject.service';
+import { TopicService } from 'src/topic/topic.service';
 import { BaseUserDto } from 'src/user/dto/base-user.dto';
 import { UserService } from 'src/user/user.service';
 import { CreateExamDto } from './dto/create-exam.dto';
@@ -26,6 +29,9 @@ export class ExamService {
   constructor(
     @InjectModel(Exam.name) private readonly model: Model<ExamDocument>,
     private readonly userService: UserService,
+    private readonly topicService: TopicService,
+    private readonly questionService: QuestionService,
+    private readonly subjectService: SubjectService,
   ) {}
 
   async findAll(query: QueryFindAll): Promise<any> {
@@ -100,7 +106,7 @@ export class ExamService {
   ): Promise<Exam> {
     const { id: authId, role: authRole } = authUser;
 
-    if (authRole !== 'TEACHER') {
+    if (authRole === 'STUDENT') {
       throw new ForbiddenException({
         code: NO_EXECUTE_PERMISSION,
         message: 'No execute permission',
@@ -126,6 +132,71 @@ export class ExamService {
     );
 
     return response;
+  }
+
+  async createRandom(subjectId: string, authUser: BaseUserDto): Promise<any> {
+    const { id: authId } = authUser;
+
+    const subject = await this.subjectService.findOne(subjectId);
+
+    const topics = await this.topicService.findAll({ subjectId });
+
+    let questionIds = [];
+
+    await Promise.all(
+      topics?.data?.map(async (item) => {
+        const { numOfLevel1, numOfLevel2, numOfLevel3, numOfLevel4 } = item;
+
+        const queryQuestionLv1 = await this.questionService.findAll({
+          subjectId,
+          level: 1,
+          random: true,
+          size: numOfLevel1,
+        });
+        const questionLv1 = queryQuestionLv1?.data || [];
+
+        const queryQuestionLv2 = await this.questionService.findAll({
+          subjectId,
+          level: 2,
+          random: true,
+          size: numOfLevel2,
+        });
+        const questionLv2 = queryQuestionLv2?.data || [];
+
+        const queryQuestionLv3 = await this.questionService.findAll({
+          subjectId,
+          level: 3,
+          random: true,
+          size: numOfLevel3,
+        });
+        const questionLv3 = queryQuestionLv3?.data || [];
+
+        const queryQuestionLv4 = await this.questionService.findAll({
+          subjectId,
+          level: 4,
+          random: true,
+          size: numOfLevel4,
+        });
+        const questionLv4 = queryQuestionLv4?.data || [];
+
+        questionIds = [
+          ...questionLv1,
+          ...questionLv2,
+          ...questionLv3,
+          ...questionLv4,
+        ].map((i) => i._id);
+      }),
+    );
+
+    return {
+      title: `Đề thi ngẫu nhiên môn ${subject?.label}`,
+      subjectId,
+      questionIds,
+      password: '',
+      status: 'ACTIVE',
+      creatorId: authId,
+      numOfUse: 0,
+    };
   }
 
   async update(id: string, updateExamDto: UpdateExamDto): Promise<Exam> {

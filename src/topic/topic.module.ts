@@ -10,5 +10,6 @@ import { TopicService } from './topic.service';
   imports: [
     MongooseModule.forFeature([{ name: Topic.name, schema: TopicSchema }]),
   ],
+  exports: [TopicService],
 })
 export class TopicModule {}
