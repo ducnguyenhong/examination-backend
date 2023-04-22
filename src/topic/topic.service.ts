@@ -42,7 +42,11 @@ export class TopicService {
   }
 
   async findOne(id: string): Promise<Topic> {
-    return await this.model.findById(id).exec();
+    if (!id) {
+      return null;
+    }
+
+    return await this.model.findOne({ _id: id }).exec();
   }
 
   async create(createTopicDto: CreateTopicDto): Promise<Topic> {

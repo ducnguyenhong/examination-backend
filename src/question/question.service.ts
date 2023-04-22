@@ -6,6 +6,7 @@ import identity from 'lodash/identity';
 import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
 import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
+import { TopicService } from 'src/topic/topic.service';
 import { BaseUserDto } from 'src/user/dto/base-user.dto';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
@@ -15,6 +16,7 @@ import { Question, QuestionDocument } from './schemas/question.schema';
 export class QuestionService {
   constructor(
     @InjectModel(Question.name) private readonly model: Model<QuestionDocument>,
+    private readonly topicService: TopicService,
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
@@ -57,8 +59,20 @@ export class QuestionService {
         .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
     }
 
+    const questionList = await Promise.all(
+      dataList.map(async (item) => {
+        const { topicId = '', ...rest } = item.toObject();
+        const topic = await this.topicService.findOne(topicId);
+        return {
+          ...rest,
+          topicId,
+          topicTitle: topic?.title,
+        };
+      }),
+    );
+
     return {
-      data: dataList,
+      data: questionList,
       pagination: {
         page: pageQuery,
         size: sizeQuery,
@@ -67,8 +81,16 @@ export class QuestionService {
     };
   }
 
-  async findOne(id: string): Promise<Question> {
-    return await this.model.findById(id).exec();
+  async findOne(id: string): Promise<any> {
+    const question = await this.model.findOne({ _id: id }).exec();
+    const { topicId = '', ...rest } = question.toObject();
+    const topic = await this.topicService.findOne(topicId);
+
+    return {
+      ...rest,
+      topicId,
+      topicTitle: topic?.title,
+    };
   }
 
   async create(
