@@ -61,10 +61,11 @@ export class QuestionService {
 
     const questionList = await Promise.all(
       dataList.map(async (item) => {
-        const { topicId = '', ...rest } = item.toObject();
+        const { topicId = '', _id, __v, ...rest } = item.toObject();
         const topic = await this.topicService.findOne(topicId);
         return {
           ...rest,
+          id: _id,
           topicId,
           topicTitle: topic?.title,
         };
@@ -83,11 +84,12 @@ export class QuestionService {
 
   async findOne(id: string): Promise<any> {
     const question = await this.model.findOne({ _id: id }).exec();
-    const { topicId = '', ...rest } = question.toObject();
+    const { topicId = '', _id, __v, ...rest } = question.toObject();
     const topic = await this.topicService.findOne(topicId);
 
     return {
       ...rest,
+      id: _id,
       topicId,
       topicTitle: topic?.title,
     };
