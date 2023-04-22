@@ -10,5 +10,6 @@ import { SubjectService } from './subject.service';
   imports: [
     MongooseModule.forFeature([{ name: Subject.name, schema: SubjectSchema }]),
   ],
+  exports: [SubjectService],
 })
 export class SubjectModule {}

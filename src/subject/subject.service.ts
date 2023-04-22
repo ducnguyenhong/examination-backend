@@ -37,9 +37,9 @@ export class SubjectService {
     };
   }
 
-  // async findOne(id: string): Promise<Subject> {
-  //   return await this.model.findById(id).exec();
-  // }
+  async findOne(id: string): Promise<Subject> {
+    return await this.model.findOne({ _id: id }).exec();
+  }
 
   // async create(createSubjectDto: CreateSubjectDto): Promise<Subject> {
   //   return await new this.model({

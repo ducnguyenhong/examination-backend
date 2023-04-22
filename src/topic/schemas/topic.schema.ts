@@ -8,11 +8,23 @@ export class Topic {
   @Prop({ required: true })
   title: string;
 
-  @Prop()
-  description?: string;
+  @Prop({ required: true })
+  subjectId: string;
 
   @Prop({ required: true })
-  status: 'ACTIVE' | 'INACTIVE';
+  numOfLevel1: number;
+
+  @Prop({ required: true })
+  numOfLevel2: number;
+
+  @Prop({ required: true })
+  numOfLevel3: number;
+
+  @Prop({ required: true })
+  numOfLevel4: number;
+
+  @Prop()
+  class: string;
 
   @Prop()
   updatedAt?: number;

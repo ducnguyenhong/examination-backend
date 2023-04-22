@@ -18,20 +18,44 @@ export class QuestionService {
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size, keyword = '', creatorId } = query || {};
+    const {
+      page,
+      size,
+      keyword = '',
+      creatorId,
+      random,
+      subjectId,
+      level,
+    } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
+
     const queryDb = pickBy(
-      { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' }, creatorId },
+      {
+        status: 'ACTIVE',
+        title: { $regex: '.*' + keyword + '.*' },
+        creatorId,
+        subjectId,
+        level,
+      },
       identity,
     );
     const numOfItem = await this.model.count(queryDb);
 
-    const dataList = await this.model
-      .find(queryDb)
-      .limit(sizeQuery)
-      .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+    let dataList = [];
+
+    if (random) {
+      dataList = await this.model.aggregate([
+        { $match: queryDb },
+        { $sample: { size: sizeQuery } },
+      ]);
+    } else {
+      dataList = await this.model
+        .find(queryDb)
+        .limit(sizeQuery)
+        .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+    }
 
     return {
       data: dataList,

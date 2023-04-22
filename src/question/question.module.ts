@@ -12,5 +12,6 @@ import { Question, QuestionSchema } from './schemas/question.schema';
       { name: Question.name, schema: QuestionSchema },
     ]),
   ],
+  exports: [QuestionService],
 })
 export class QuestionModule {}
