@@ -21,6 +21,9 @@ export class Question {
   creatorId: string;
 
   @Prop({ required: true })
+  topicId: string;
+
+  @Prop({ required: true })
   security: boolean;
 
   @Prop({ required: true })
