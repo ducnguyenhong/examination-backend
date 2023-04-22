@@ -72,7 +72,7 @@ export class ExamService {
       .find(queryDb)
       .sort(querySort)
       .limit(sizeQuery)
-      .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+      .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
 
     const examList = await Promise.all(
       dataList.map(async (item) => {

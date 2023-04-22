@@ -76,7 +76,7 @@ export class UserService {
       .find(queryDb, { password: 0, __v: 0 })
       .sort(querySort)
       .limit(sizeQuery)
-      .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+      .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
 
     return {
       data: dataList,
@@ -129,7 +129,7 @@ export class UserService {
     const dataList = await this.model
       .find(queryDb, { password: 0, __v: 0 })
       .limit(sizeQuery)
-      .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+      .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
 
     return {
       data: dataList,

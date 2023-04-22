@@ -25,7 +25,7 @@ export class SubjectService {
     const dataList = await this.model
       .find(queryDb)
       .limit(sizeQuery)
-      .skip(pageQuery > 1 ? pageQuery * sizeQuery : 0);
+      .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
 
     return {
       data: dataList,
