@@ -22,6 +22,7 @@ interface QueryFindAll {
   random?: boolean;
   level?: number;
   ids?: string;
+  topicId?: string;
 }
 
 @Injectable()
@@ -42,6 +43,7 @@ export class QuestionService {
       level,
       sort,
       ids,
+      topicId,
     } = query || {};
 
     const pageQuery = Number(page) || 1;
@@ -65,6 +67,7 @@ export class QuestionService {
         creatorId,
         subjectId,
         level,
+        topicId,
       },
       identity,
     );
