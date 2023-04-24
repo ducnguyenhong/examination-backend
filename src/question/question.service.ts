@@ -12,6 +12,18 @@ import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { Question, QuestionDocument } from './schemas/question.schema';
 
+interface QueryFindAll {
+  page?: number | string;
+  size?: number | string;
+  keyword?: number | string;
+  creatorId?: string;
+  subjectId?: string;
+  sort?: string;
+  random?: boolean;
+  level?: number;
+  ids?: string;
+}
+
 @Injectable()
 export class QuestionService {
   constructor(
@@ -19,7 +31,7 @@ export class QuestionService {
     private readonly topicService: TopicService,
   ) {}
 
-  async findAll(query: Record<string, unknown>): Promise<any> {
+  async findAll(query: QueryFindAll): Promise<any> {
     const {
       page,
       size,
@@ -28,10 +40,23 @@ export class QuestionService {
       random,
       subjectId,
       level,
+      sort,
+      ids,
     } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
+
+    const querySort = {};
+    if (sort) {
+      const [field, type] = sort.split(' ');
+      if (type === 'asc') {
+        querySort[field] = 1;
+      }
+      if (type === 'desc') {
+        querySort[field] = -1;
+      }
+    }
 
     const queryDb = pickBy(
       {
@@ -43,6 +68,10 @@ export class QuestionService {
       },
       identity,
     );
+    if (ids) {
+      const arrIds = ids.split(',');
+      queryDb._id = { $in: arrIds };
+    }
     const numOfItem = await this.model.count(queryDb);
 
     let dataList = [];
@@ -55,12 +84,15 @@ export class QuestionService {
     } else {
       dataList = await this.model
         .find(queryDb)
+        .sort(querySort)
         .limit(sizeQuery)
         .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
     }
 
     const questionList = await Promise.all(
       dataList.map(async (item) => {
+        console.log('ducnh item', item?.toObject());
+
         const { topicId = '', _id, __v, ...rest } = item.toObject();
         const topic = await this.topicService.findOne(topicId);
         return {
