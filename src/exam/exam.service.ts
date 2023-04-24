@@ -185,7 +185,7 @@ export class ExamService {
           ...questionLv3,
           ...questionLv4,
         ]
-          .map((i) => i._id)
+          .map((i) => i.id)
           .slice(0, subject.questionNumber);
       }),
     );

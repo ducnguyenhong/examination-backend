@@ -94,9 +94,7 @@ export class QuestionService {
 
     const questionList = await Promise.all(
       dataList.map(async (item) => {
-        console.log('ducnh item', item?.toObject());
-
-        const { topicId = '', _id, __v, ...rest } = item.toObject();
+        const { topicId = '', _id, __v, ...rest } = item;
         const topic = await this.topicService.findOne(topicId);
         return {
           ...rest,

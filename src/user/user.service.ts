@@ -155,8 +155,6 @@ export class UserService {
 
     const { followers = [], _id, ...rest } = userDetail.toObject();
 
-    console.log('ducnh _id', _id);
-
     return {
       ...rest,
       id,
