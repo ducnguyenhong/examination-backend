@@ -152,6 +152,7 @@ export class ExamService {
           level: 1,
           random: true,
           size: numOfLevel1,
+          isInternal: true,
         });
         const questionLv1 = queryQuestionLv1?.data || [];
 
@@ -160,6 +161,7 @@ export class ExamService {
           level: 2,
           random: true,
           size: numOfLevel2,
+          isInternal: true,
         });
         const questionLv2 = queryQuestionLv2?.data || [];
 
@@ -168,6 +170,7 @@ export class ExamService {
           level: 3,
           random: true,
           size: numOfLevel3,
+          isInternal: true,
         });
         const questionLv3 = queryQuestionLv3?.data || [];
 
@@ -176,6 +179,7 @@ export class ExamService {
           level: 4,
           random: true,
           size: numOfLevel4,
+          isInternal: true,
         });
         const questionLv4 = queryQuestionLv4?.data || [];
 

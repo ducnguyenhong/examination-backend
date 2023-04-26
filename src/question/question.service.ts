@@ -23,6 +23,7 @@ interface QueryFindAll {
   level?: number;
   ids?: string;
   topicId?: string;
+  isInternal?: boolean;
 }
 
 @Injectable()
@@ -44,6 +45,7 @@ export class QuestionService {
       sort,
       ids,
       topicId,
+      isInternal,
     } = query || {};
 
     const pageQuery = Number(page) || 1;
@@ -94,7 +96,8 @@ export class QuestionService {
 
     const questionList = await Promise.all(
       dataList.map(async (item) => {
-        const { topicId = '', _id, __v, ...rest } = item;
+        const questionItem = isInternal ? item : item.toObject();
+        const { topicId = '', _id, __v, ...rest } = questionItem;
         const topic = await this.topicService.findOne(topicId);
         return {
           ...rest,
