@@ -183,21 +183,20 @@ export class ExamService {
         });
         const questionLv4 = queryQuestionLv4?.data || [];
 
-        questionIds = [
+        const questionLvAllIds = [
           ...questionLv1,
           ...questionLv2,
           ...questionLv3,
           ...questionLv4,
-        ]
-          .map((i) => i.id)
-          .slice(0, subject.questionNumber);
+        ].map((i) => i.id);
+        questionIds = [...questionIds, ...questionLvAllIds];
       }),
     );
 
     return {
       title: `Đề thi ngẫu nhiên môn ${subject.label}`,
       subjectId,
-      questionIds,
+      questionIds: questionIds.slice(0, subject.questionNumber),
       password: '',
       status: 'ACTIVE',
       creatorId: authId,
