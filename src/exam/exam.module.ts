@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ExamHistoryModule } from 'src/exam-history/exam-history.module';
 import { QuestionModule } from 'src/question/question.module';
 import { SubjectModule } from 'src/subject/subject.module';
 import { TopicModule } from 'src/topic/topic.module';
@@ -17,6 +18,7 @@ import { Exam, ExamSchema } from './schemas/exam.schema';
     TopicModule,
     QuestionModule,
     SubjectModule,
+    forwardRef(() => ExamHistoryModule),
   ],
   exports: [ExamService],
 })

@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { ForbiddenException } from '@nestjs/common/exceptions';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
 import identity from 'lodash/identity';
 import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
-import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
+import {
+  CANT_EDIT_ONCE_PUBLISHED,
+  NO_EXECUTE_PERMISSION,
+} from 'src/constant/response-code';
+import { ExamHistoryService } from 'src/exam-history/exam-history.service';
 import { QuestionService } from 'src/question/question.service';
 import { SubjectService } from 'src/subject/subject.service';
 import { TopicService } from 'src/topic/topic.service';
@@ -27,14 +31,17 @@ interface QueryFindAll {
 @Injectable()
 export class ExamService {
   constructor(
-    @InjectModel(Exam.name) private readonly model: Model<ExamDocument>,
+    @Inject(forwardRef(() => ExamHistoryService))
+    private readonly examHistoryService: ExamHistoryService,
+    @InjectModel(Exam.name)
+    private readonly model: Model<ExamDocument>,
     private readonly userService: UserService,
     private readonly topicService: TopicService,
     private readonly questionService: QuestionService,
     private readonly subjectService: SubjectService,
   ) {}
 
-  async findAll(query: QueryFindAll): Promise<any> {
+  async findAll(query: QueryFindAll, authUser?: BaseUserDto): Promise<any> {
     const {
       page,
       size,
@@ -43,6 +50,8 @@ export class ExamService {
       subjectId,
       sort,
     } = query || {};
+
+    const { id: authId } = authUser || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
@@ -76,12 +85,22 @@ export class ExamService {
 
     const examList = await Promise.all(
       dataList.map(async (item) => {
-        const { creatorId, ...rest } = item.toObject();
+        const { creatorId, _id, __v, ...rest } = item.toObject();
         const creator = await this.userService.findOne(creatorId);
+        const result = await this.examHistoryService.findOneByQuery({
+          examId: _id,
+          studentId: authId,
+        });
         return {
           ...rest,
           creatorId,
           creatorFullName: creator.fullName,
+          id: _id,
+          result: result
+            ? {
+                score: result.score,
+              }
+            : null,
         };
       }),
     );
@@ -96,8 +115,25 @@ export class ExamService {
     };
   }
 
-  async findOne(id: string): Promise<Exam> {
-    return await this.model.findById(id).exec();
+  async findOne(id: string, authUser?: BaseUserDto): Promise<any> {
+    const exam = await (await this.model.findById(id).exec()).toObject();
+    const { id: authId } = authUser || {};
+    const result = await this.examHistoryService.findOneByQuery({
+      examId: id,
+      studentId: authId,
+    });
+
+    const { _id, __v, ...rest } = exam;
+
+    return {
+      ...rest,
+      id: _id,
+      result: result
+        ? {
+            score: result.score,
+          }
+        : null,
+    };
   }
 
   async create(
@@ -204,6 +240,19 @@ export class ExamService {
   }
 
   async update(id: string, updateExamDto: UpdateExamDto): Promise<Exam> {
+    const exam = await this.model.findOne({ _id: id }).exec();
+    const { publishAt } = exam.toObject();
+
+    if (dayjs().valueOf() > publishAt) {
+      throw new HttpException(
+        {
+          message: `Can't edit once published`,
+          code: CANT_EDIT_ONCE_PUBLISHED,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     return await this.model
       .findByIdAndUpdate(
         id,

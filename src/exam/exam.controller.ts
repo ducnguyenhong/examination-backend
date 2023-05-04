@@ -24,8 +24,8 @@ export class ExamController {
   constructor(private readonly service: ExamService) {}
 
   @Get()
-  async index(@Query() query) {
-    return await this.service.findAll(query);
+  async index(@Query() query, @Request() req) {
+    return await this.service.findAll(query, req.user);
   }
 
   @Get('random')
@@ -34,8 +34,8 @@ export class ExamController {
   }
 
   @Get(':id')
-  async find(@Param('id') id: string) {
-    return await this.service.findOne(id);
+  async find(@Param('id') id: string, @Request() req) {
+    return await this.service.findOne(id, req.user);
   }
 
   @Post()

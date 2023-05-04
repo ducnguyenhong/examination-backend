@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ForbiddenException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
@@ -20,6 +20,7 @@ export class ExamHistoryService {
   constructor(
     @InjectModel(ExamHistory.name)
     private readonly model: Model<ExamHistoryDocument>,
+    @Inject(forwardRef(() => ExamService))
     private readonly examService: ExamService,
   ) {}
 
@@ -51,6 +52,10 @@ export class ExamHistoryService {
 
   async findOne(id: string): Promise<ExamHistory> {
     return await this.model.findById(id).exec();
+  }
+
+  async findOneByQuery(query: any): Promise<ExamHistory> {
+    return await this.model.findOne(query).exec();
   }
 
   async create(

@@ -48,8 +48,8 @@ export class QuestionService {
       isInternal,
     } = query || {};
 
-    const pageQuery = Number(page) || 1;
-    const sizeQuery = Number(size) || 10;
+    const pageQuery = typeof page === 'undefined' ? 1 : Number(page);
+    const sizeQuery = typeof size === 'undefined' ? 10 : Number(size);
 
     const querySort = {};
     if (sort) {
