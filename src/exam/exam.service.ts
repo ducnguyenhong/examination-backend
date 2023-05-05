@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
 import identity from 'lodash/identity';
 import pickBy from 'lodash/pickBy';
+import sortBy from 'lodash/sortBy';
 import { Model } from 'mongoose';
 import {
   CANT_EDIT_ONCE_PUBLISHED,
@@ -170,14 +171,14 @@ export class ExamService {
     return response;
   }
 
-  async createRandom(subjectId: string, authUser: BaseUserDto): Promise<any> {
+  async generateRandom(subjectId: string, authUser: BaseUserDto): Promise<any> {
     const { id: authId } = authUser;
 
     const subject = await this.subjectService.findOne(subjectId);
 
     const topics = await this.topicService.findAll({ subjectId });
 
-    let questionIds = [];
+    const questionList = [];
 
     await Promise.all(
       topics?.data?.map(async (item) => {
@@ -189,6 +190,7 @@ export class ExamService {
           random: true,
           size: numOfLevel1,
           isInternal: true,
+          topicId: item._id.toString(),
         });
         const questionLv1 = queryQuestionLv1?.data || [];
 
@@ -198,6 +200,7 @@ export class ExamService {
           random: true,
           size: numOfLevel2,
           isInternal: true,
+          topicId: item._id.toString(),
         });
         const questionLv2 = queryQuestionLv2?.data || [];
 
@@ -207,6 +210,7 @@ export class ExamService {
           random: true,
           size: numOfLevel3,
           isInternal: true,
+          topicId: item._id.toString(),
         });
         const questionLv3 = queryQuestionLv3?.data || [];
 
@@ -216,23 +220,36 @@ export class ExamService {
           random: true,
           size: numOfLevel4,
           isInternal: true,
+          topicId: item._id.toString(),
         });
         const questionLv4 = queryQuestionLv4?.data || [];
+        console.log('ducnh questionLv1', questionLv1.length);
+        console.log('ducnh questionLv2', questionLv2.length);
+        console.log('ducnh questionLv3', questionLv3.length);
+        console.log('ducnh questionLv4', questionLv4.length);
 
-        const questionLvAllIds = [
-          ...questionLv1,
-          ...questionLv2,
-          ...questionLv3,
-          ...questionLv4,
-        ].map((i) => i.id);
-        questionIds = [...questionIds, ...questionLvAllIds];
+        console.log('ducnh topicId', item.title);
+
+        console.log('__________________________________________________');
+
+        questionList.push(
+          [...questionLv1, ...questionLv2, ...questionLv3, ...questionLv4].map(
+            (i) => ({ id: i.id, level: i.level, topicId: item._id.toString() }),
+          ),
+        );
       }),
     );
+
+    const questionIds = sortBy(questionList.flat(), (i) => i.level).map(
+      (i) => i.id,
+    );
+
+    console.log('ducnh questionIds', questionIds.length);
 
     return {
       title: `Đề thi ngẫu nhiên môn ${subject.label}`,
       subjectId,
-      questionIds: questionIds.slice(0, subject.questionNumber),
+      questionIds,
       password: '',
       status: 'ACTIVE',
       creatorId: authId,

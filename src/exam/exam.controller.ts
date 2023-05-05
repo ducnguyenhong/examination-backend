@@ -29,8 +29,8 @@ export class ExamController {
   }
 
   @Get('random')
-  async createRandom(@Request() req) {
-    return await this.service.createRandom(req.query?.subjectId, req.user);
+  async generateRandom(@Request() req) {
+    return await this.service.generateRandom(req.query?.subjectId, req.user);
   }
 
   @Get(':id')
