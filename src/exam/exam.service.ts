@@ -59,6 +59,7 @@ export class ExamService {
     const queryDb = pickBy(
       {
         status: 'ACTIVE',
+        publishAt: { $lte: dayjs().valueOf() },
         title: { $regex: '.*' + keyword + '.*' },
         creatorId,
         subjectId,
@@ -223,15 +224,6 @@ export class ExamService {
           topicId: item._id.toString(),
         });
         const questionLv4 = queryQuestionLv4?.data || [];
-        console.log('ducnh questionLv1', questionLv1.length);
-        console.log('ducnh questionLv2', questionLv2.length);
-        console.log('ducnh questionLv3', questionLv3.length);
-        console.log('ducnh questionLv4', questionLv4.length);
-
-        console.log('ducnh topicId', item.title);
-
-        console.log('__________________________________________________');
-
         questionList.push(
           [...questionLv1, ...questionLv2, ...questionLv3, ...questionLv4].map(
             (i) => ({ id: i.id, level: i.level, topicId: item._id.toString() }),
@@ -243,8 +235,6 @@ export class ExamService {
     const questionIds = sortBy(questionList.flat(), (i) => i.level).map(
       (i) => i.id,
     );
-
-    console.log('ducnh questionIds', questionIds.length);
 
     return {
       title: `Đề thi ngẫu nhiên môn ${subject.label}`,
