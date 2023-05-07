@@ -125,11 +125,16 @@ export class ExamService {
       studentId: authId,
     });
 
-    const { _id, __v, ...rest } = exam;
+    const { _id, __v, publishAt, ...rest } = exam;
+
+    if (publishAt > dayjs().valueOf()) {
+      return null;
+    }
 
     return {
       ...rest,
       id: _id,
+      publishAt,
       result: result
         ? {
             score: result.score,
