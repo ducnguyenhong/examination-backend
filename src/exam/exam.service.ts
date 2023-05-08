@@ -52,14 +52,14 @@ export class ExamService {
       sort,
     } = query || {};
 
-    const { id: authId } = authUser || {};
+    const { id: authId, role: authRole } = authUser || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
     const queryDb = pickBy(
       {
         status: 'ACTIVE',
-        publishAt: { $lte: dayjs().valueOf() },
+        publishAt: authRole === 'STUDENT' ? { $lte: dayjs().valueOf() } : {},
         title: { $regex: '.*' + keyword + '.*' },
         creatorId,
         subjectId,
@@ -119,7 +119,7 @@ export class ExamService {
 
   async findOne(id: string, authUser?: BaseUserDto): Promise<any> {
     const exam = await (await this.model.findById(id).exec()).toObject();
-    const { id: authId } = authUser || {};
+    const { id: authId, role: authRole } = authUser || {};
     const result = await this.examHistoryService.findOneByQuery({
       examId: id,
       studentId: authId,
@@ -127,7 +127,7 @@ export class ExamService {
 
     const { _id, __v, publishAt, ...rest } = exam;
 
-    if (publishAt > dayjs().valueOf()) {
+    if (publishAt > dayjs().valueOf() && authRole === 'STUDENT') {
       return null;
     }
 
