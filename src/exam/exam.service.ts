@@ -59,8 +59,8 @@ export class ExamService {
     const queryDb = pickBy(
       {
         status: 'ACTIVE',
-        publishAt: authRole === 'STUDENT' ? { $lte: dayjs().valueOf() } : {},
-        title: { $regex: '.*' + keyword + '.*' },
+        publishAt:
+          authRole === 'STUDENT' ? { $lte: dayjs().valueOf() } : undefined,
         creatorId,
         subjectId,
       },
@@ -251,11 +251,16 @@ export class ExamService {
     };
   }
 
-  async update(id: string, updateExamDto: UpdateExamDto): Promise<Exam> {
+  async update(
+    id: string,
+    updateExamDto: UpdateExamDto,
+    options?: { isInternal: boolean },
+  ): Promise<Exam> {
     const exam = await this.model.findOne({ _id: id }).exec();
     const { publishAt } = exam.toObject();
+    const { isInternal } = options || {};
 
-    if (dayjs().valueOf() > publishAt) {
+    if (dayjs().valueOf() > publishAt && !isInternal) {
       throw new HttpException(
         {
           message: `Can't edit once published`,

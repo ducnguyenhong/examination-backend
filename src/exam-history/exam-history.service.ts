@@ -83,10 +83,14 @@ export class ExamHistoryService {
       status: 'ACTIVE',
     }).save();
 
-    await this.examService.update(examId, {
-      numOfUse: exam.numOfUse + 1,
-      updatedAt: dayjs().valueOf(),
-    });
+    await this.examService.update(
+      examId,
+      {
+        numOfUse: exam.numOfUse + 1,
+        updatedAt: dayjs().valueOf(),
+      },
+      { isInternal: true },
+    );
 
     return response;
   }
