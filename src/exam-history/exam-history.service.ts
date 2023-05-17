@@ -3,10 +3,12 @@ import { ForbiddenException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
 import identity from 'lodash/identity';
+import orderBy from 'lodash/orderBy';
 import pickBy from 'lodash/pickBy';
 import { Model } from 'mongoose';
 import { NO_EXECUTE_PERMISSION } from 'src/constant/response-code';
 import { ExamService } from 'src/exam/exam.service';
+import { SubjectService } from 'src/subject/subject.service';
 import { BaseUserDto } from 'src/user/dto/base-user.dto';
 import { CreateExamHistoryDto } from './dto/create-exam-history.dto';
 import { UpdateExamHistoryDto } from './dto/update-exam-history.dto';
@@ -22,6 +24,7 @@ export class ExamHistoryService {
     private readonly model: Model<ExamHistoryDocument>,
     @Inject(forwardRef(() => ExamService))
     private readonly examService: ExamService,
+    private readonly subjectService: SubjectService,
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
@@ -48,6 +51,72 @@ export class ExamHistoryService {
         total: numOfItem,
       },
     };
+  }
+
+  async statistic(
+    query: Record<string, unknown>,
+    authUser: BaseUserDto,
+  ): Promise<any> {
+    const { subjectId } = query || {};
+    const { id: authId } = authUser || {};
+    let subjectList = await this.subjectService.findAll();
+    const queryDb = pickBy({ status: 'ACTIVE', studentId: authId }, identity);
+
+    const historyList = await this.model.find(queryDb);
+
+    if (subjectId) {
+      subjectList = subjectList?.data?.filter(
+        (i) => i?.toObject()?._id?.toString() === subjectId,
+      );
+    } else {
+      subjectList = subjectList?.data;
+    }
+
+    const statisticList = subjectList?.map((item) => {
+      const { _id, label } = item.toObject();
+      const historyBySubject = orderBy(
+        historyList?.filter((i) => i.subjectId === _id.toString()),
+        'startedAt',
+        'desc',
+      );
+
+      const scoreList = historyBySubject?.map((i) => i.score) || [];
+      const averageScore = scoreList.length
+        ? Number(
+            (scoreList.reduce((a, b) => a + b, 0) / scoreList.length).toFixed(
+              2,
+            ),
+          )
+        : 0;
+
+      const maxScore = Math.max(...scoreList);
+      const minScore = Math.min(...scoreList);
+
+      return {
+        subjectName: label,
+        subjectId: _id,
+        examHistory: historyBySubject?.map((i) => ({
+          score: i.score,
+          startedAt: i.startedAt,
+          id: i._id,
+        })),
+        maxScore: {
+          score: maxScore,
+          ids: historyBySubject
+            ?.filter((i) => i.score === maxScore)
+            ?.map((i) => i._id),
+        },
+        averageScore,
+        minScore: {
+          score: minScore,
+          ids: historyBySubject
+            ?.filter((i) => i.score === minScore)
+            ?.map((i) => i._id),
+        },
+      };
+    });
+
+    return statisticList;
   }
 
   async findOne(id: string): Promise<ExamHistory> {

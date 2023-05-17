@@ -11,7 +11,7 @@ export class SubjectService {
     @InjectModel(Subject.name) private readonly model: Model<SubjectDocument>,
   ) {}
 
-  async findAll(query: Record<string, unknown>): Promise<any> {
+  async findAll(query?: Record<string, unknown>): Promise<any> {
     const { page, size, keyword = '' } = query || {};
 
     const pageQuery = Number(page) || 1;

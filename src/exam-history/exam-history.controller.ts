@@ -25,6 +25,11 @@ export class ExamHistoryController {
     return await this.service.findAll(query);
   }
 
+  @Get('statistic')
+  async statistic(@Query() query, @Request() req) {
+    return await this.service.statistic(query, req.user);
+  }
+
   @Get(':id')
   async find(@Param('id') id: string) {
     return await this.service.findOne(id);
