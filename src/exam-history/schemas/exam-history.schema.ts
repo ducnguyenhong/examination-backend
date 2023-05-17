@@ -12,6 +12,9 @@ export class ExamHistory {
   studentId: string;
 
   @Prop({ required: true })
+  subjectId: string;
+
+  @Prop({ required: true })
   result: { questionId: string; answer: string }[];
 
   @Prop({ required: true })

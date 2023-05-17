@@ -89,7 +89,7 @@ export class ExamService {
       dataList.map(async (item) => {
         const { creatorId, _id, __v, ...rest } = item.toObject();
         const creator = await this.userService.findOne(creatorId);
-        const result = await this.examHistoryService.findOneByQuery({
+        const result: any = await this.examHistoryService.findOneByQuery({
           examId: _id,
           studentId: authId,
         });
@@ -101,6 +101,7 @@ export class ExamService {
           result: result
             ? {
                 score: result.score,
+                id: result._id,
               }
             : null,
         };
@@ -120,7 +121,7 @@ export class ExamService {
   async findOne(id: string, authUser?: BaseUserDto): Promise<any> {
     const exam = await (await this.model.findById(id).exec()).toObject();
     const { id: authId, role: authRole } = authUser || {};
-    const result = await this.examHistoryService.findOneByQuery({
+    const result: any = await this.examHistoryService.findOneByQuery({
       examId: id,
       studentId: authId,
     });
@@ -138,6 +139,7 @@ export class ExamService {
       result: result
         ? {
             score: result.score,
+            id: result._id,
           }
         : null,
     };

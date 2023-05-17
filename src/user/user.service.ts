@@ -72,11 +72,54 @@ export class UserService {
 
     const numOfItem = await this.model.count(queryDb);
 
-    const dataList = await this.model
-      .find(queryDb, { password: 0, __v: 0 })
-      .sort(querySort)
-      .limit(sizeQuery)
-      .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
+    let dataList = [];
+
+    if (sort && sort.split(' ')[0] === 'followers') {
+      const sortType = sort.split(' ')[1] === 'asc' ? 1 : -1;
+      dataList = await this.model
+        .aggregate([
+          { $match: queryDb },
+          {
+            $project: {
+              username: 1,
+              fullName: 1,
+              createdAt: 1,
+              subjectIds: 1,
+              numOfExam: 1,
+              updatedAt: 1,
+              role: 1,
+              status: 1,
+              followers: 1,
+              following: 1,
+              avatar: 1,
+              school: 1,
+              address: 1,
+              phone: 1,
+              gender: 1,
+              numOfFollower: { $size: { $ifNull: ['$followers', []] } },
+            },
+          },
+          { $sort: { numOfFollower: sortType } },
+        ])
+        .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0)
+        .limit(sizeQuery);
+      dataList = dataList.map((i) => {
+        const { _id, numOfFollower, ...rest } = i;
+        return { ...rest, id: _id };
+      });
+    } else {
+      dataList = await this.model
+        .find(queryDb, { password: 0, __v: 0 })
+        .sort(querySort)
+        .limit(sizeQuery)
+        .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
+    }
+
+    // const dataList = await this.model
+    //   .find(queryDb, { password: 0, __v: 0 })
+    //   .sort(querySort)
+    //   .limit(sizeQuery)
+    //   .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
 
     return {
       data: dataList,
