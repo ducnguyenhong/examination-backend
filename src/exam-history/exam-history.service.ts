@@ -28,12 +28,12 @@ export class ExamHistoryService {
   ) {}
 
   async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size, keyword = '' } = query || {};
+    const { page, size, keyword = '', studentId } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
     const queryDb = pickBy(
-      { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' } },
+      { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' }, studentId },
       identity,
     );
     const numOfItem = await this.model.count(queryDb);
@@ -74,6 +74,7 @@ export class ExamHistoryService {
 
     const statisticList = subjectList?.map((item) => {
       const { _id, label } = item.toObject();
+
       const historyBySubject = orderBy(
         historyList?.filter((i) => i.subjectId === _id.toString()),
         'startedAt',
@@ -124,7 +125,9 @@ export class ExamHistoryService {
   }
 
   async findOneByQuery(query: any): Promise<ExamHistory> {
-    return await this.model.findOne(query).exec();
+    return await this.model
+      .findOne(query, {}, { sort: { createdAt: -1 } })
+      .exec();
   }
 
   async create(
