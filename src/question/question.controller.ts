@@ -28,6 +28,16 @@ export class QuestionController {
     return await this.service.findAll(query);
   }
 
+  @Get('count')
+  async count(@Request() req) {
+    return await this.service.count(req.query);
+  }
+
+  @Get('get-by-date')
+  async getByDate() {
+    return await this.service.getByDate();
+  }
+
   @Get(':id')
   async find(@Param('id') id: string) {
     return await this.service.findOne(id);

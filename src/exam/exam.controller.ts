@@ -28,6 +28,16 @@ export class ExamController {
     return await this.service.findAll(query, req.user);
   }
 
+  @Get('count')
+  async count(@Request() req) {
+    return await this.service.count(req.query);
+  }
+
+  @Get('get-by-date')
+  async getByDate() {
+    return await this.service.getByDate();
+  }
+
   @Get('random')
   async generateRandom(@Request() req) {
     return await this.service.generateRandom(req.query?.subjectId, req.user);

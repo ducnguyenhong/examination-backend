@@ -131,6 +131,26 @@ export class UserService {
     };
   }
 
+  async count(query: QueryFindAll): Promise<any> {
+    const { role } = query || {};
+    if (role === 'ADMIN') {
+      return [];
+    }
+    const queryDb = pickBy(
+      {
+        role,
+        status: 'ACTIVE',
+      },
+      identity,
+    );
+
+    const numOfItem = await this.model.count(queryDb);
+
+    return {
+      count: numOfItem,
+    };
+  }
+
   async findFollowing(
     query: Record<string, unknown>,
     authUser: BaseUserDto,

@@ -35,6 +35,12 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('count')
+  async count(@Query() query) {
+    return await this.service.count(query);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async find(@Param('id') id: string, @Request() req) {
     return await this.service.findOne(id, req.user);

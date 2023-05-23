@@ -2,6 +2,7 @@ import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ForbiddenException, HttpException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import dayjs from 'dayjs';
+import lodash from 'lodash';
 import identity from 'lodash/identity';
 import pickBy from 'lodash/pickBy';
 import sortBy from 'lodash/sortBy';
@@ -116,6 +117,49 @@ export class ExamService {
         total: numOfItem,
       },
     };
+  }
+
+  async count(query: QueryFindAll): Promise<any> {
+    const { creatorId } = query || {};
+    const queryDb = pickBy(
+      {
+        status: 'ACTIVE',
+        creatorId,
+      },
+      identity,
+    );
+
+    const numOfItem = await this.model.count(queryDb);
+
+    return {
+      count: numOfItem,
+    };
+  }
+
+  async getByDate(): Promise<any> {
+    const queryDb = pickBy(
+      {
+        status: 'ACTIVE',
+      },
+      identity,
+    );
+
+    const dataList = await this.model.find(queryDb);
+    const dataListTransformDate = dataList.map((item) => {
+      const { createdAt, _id, __v, ...rest } = item.toObject();
+      return {
+        createdAt: dayjs(createdAt).format('DD/MM/YYYY'),
+        id: _id,
+        ...rest,
+      };
+    });
+
+    const result = lodash(dataListTransformDate)
+      .groupBy((x) => x.createdAt)
+      .map((value, key) => ({ date: key, count: value.length }))
+      .value();
+
+    return result;
   }
 
   async findOne(id: string, authUser?: BaseUserDto): Promise<any> {
