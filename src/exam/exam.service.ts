@@ -64,6 +64,7 @@ export class ExamService {
           authRole === 'STUDENT' ? { $lte: dayjs().valueOf() } : undefined,
         creatorId,
         subjectId,
+        title: { $regex: '.*' + keyword + '.*' },
       },
       identity,
     );
@@ -136,10 +137,12 @@ export class ExamService {
     };
   }
 
-  async getByDate(): Promise<any> {
+  async getByDate(query: QueryFindAll): Promise<any> {
+    const { creatorId } = query || {};
     const queryDb = pickBy(
       {
         status: 'ACTIVE',
+        creatorId,
       },
       identity,
     );
@@ -163,14 +166,14 @@ export class ExamService {
   }
 
   async findOne(id: string, authUser?: BaseUserDto): Promise<any> {
-    const exam = await (await this.model.findById(id).exec()).toObject();
+    const exam = await (await this.model.findById(id).exec())?.toObject();
     const { id: authId, role: authRole } = authUser || {};
     const result: any = await this.examHistoryService.findOneByQuery({
       examId: id,
       studentId: authId,
     });
 
-    const { _id, __v, publishAt, ...rest } = exam;
+    const { _id, __v, publishAt, ...rest } = exam || {};
 
     if (publishAt > dayjs().valueOf() && authRole === 'STUDENT') {
       return null;

@@ -27,8 +27,8 @@ export class ExamHistoryService {
     private readonly subjectService: SubjectService,
   ) {}
 
-  async findAll(query: Record<string, unknown>): Promise<any> {
-    const { page, size, keyword = '', studentId } = query || {};
+  async findAll(query: any): Promise<any> {
+    const { page, size, keyword = '', studentId, sort } = query || {};
 
     const pageQuery = Number(page) || 1;
     const sizeQuery = Number(size) || 10;
@@ -36,10 +36,21 @@ export class ExamHistoryService {
       { status: 'ACTIVE', title: { $regex: '.*' + keyword + '.*' }, studentId },
       identity,
     );
+    const querySort = {};
+    if (sort) {
+      const [field, type] = sort.split(' ');
+      if (type === 'asc') {
+        querySort[field] = 1;
+      }
+      if (type === 'desc') {
+        querySort[field] = -1;
+      }
+    }
     const numOfItem = await this.model.count(queryDb);
 
     const dataList = await this.model
       .find(queryDb)
+      .sort(querySort)
       .limit(sizeQuery)
       .skip(pageQuery > 1 ? (pageQuery - 1) * sizeQuery : 0);
 
@@ -144,7 +155,10 @@ export class ExamHistoryService {
     }
 
     const { examId } = createExamHistoryDto;
-    const exam = await this.examService.findOne(examId);
+    let exam: any = null;
+    if (examId) {
+      exam = await this.examService.findOne(examId);
+    }
     const title = examId ? exam.title : 'Đề thi ngẫu nhiên';
 
     const response = await new this.model({
@@ -155,14 +169,16 @@ export class ExamHistoryService {
       status: 'ACTIVE',
     }).save();
 
-    await this.examService.update(
-      examId,
-      {
-        numOfUse: exam.numOfUse + 1,
-        updatedAt: dayjs().valueOf(),
-      },
-      { isInternal: true },
-    );
+    if (examId && examId) {
+      await this.examService.update(
+        examId,
+        {
+          numOfUse: exam.numOfUse + 1,
+          updatedAt: dayjs().valueOf(),
+        },
+        { isInternal: true },
+      );
+    }
 
     return response;
   }

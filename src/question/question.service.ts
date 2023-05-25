@@ -136,10 +136,12 @@ export class QuestionService {
     };
   }
 
-  async getByDate(): Promise<any> {
+  async getByDate(query: QueryFindAll): Promise<any> {
+    const { creatorId } = query || {};
     const queryDb = pickBy(
       {
         status: 'ACTIVE',
+        creatorId,
       },
       identity,
     );

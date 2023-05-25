@@ -34,8 +34,8 @@ export class QuestionController {
   }
 
   @Get('get-by-date')
-  async getByDate() {
-    return await this.service.getByDate();
+  async getByDate(@Request() req) {
+    return await this.service.getByDate(req.query);
   }
 
   @Get(':id')
